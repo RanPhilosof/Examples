@@ -1,0 +1,56 @@
+﻿syntax = "proto3";
+import "google/protobuf/wrappers.proto";
+
+message Person1 {
+  google.protobuf.StringValue name = 1;
+  int32 id = 2;
+  google.protobuf.StringValue email = 3;
+
+  // Oneof example
+  oneof contact {
+    google.protobuf.StringValue phone_number = 4;
+    google.protobuf.StringValue address = 5;
+  }
+
+  // Repeated example
+  repeated google.protobuf.StringValue hobbies = 6;
+
+  Food favoriteFood = 7;
+
+  UserRole myUserRole = 8;
+
+  repeated int32 lotoNumbers = 9;
+
+   oneof mode {
+    Stable Stable = 10;
+    HalfStable HalfStable = 11;
+    NotStable NotStable = 12;
+  }
+
+}
+
+message Food {
+    google.protobuf.StringValue name = 1;
+}
+
+enum UserRole {
+    UNKNOWN = 0;  // Default
+    ADMIN = 1;
+    USER = 2;
+    GUEST = 3;
+}
+
+message Stable 
+{
+    bool isStable = 1;
+}
+
+message HalfStable 
+{
+    bool isHalfStable  = 1;
+}
+
+message NotStable 
+{
+    bool isNotStable = 1;
+}

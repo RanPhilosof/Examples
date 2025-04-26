@@ -1,0 +1,37 @@
+﻿@page "/counter"
+@using GenericTreeView.Component
+@using GenericTreeView.SharedTypes
+@using MyNamespace
+
+<div style="display: flex; flex-wrap: wrap; flex-direction:column;">
+    <div>
+        <GenericObjectViewer T="ComplexProto" OnApplyClicked="HandleUpdatedData" @ref="genericObjectViewer" />
+    </div>
+    <div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@SetData">Click Here</MudButton>
+    </div>
+</div>
+
+@inject IFetcherService fetcherService
+
+@code {
+    private GenericObjectViewer<ComplexProto> genericObjectViewer;
+
+    public void Update()
+    {
+        StateHasChanged();
+    }
+
+    public void HandleUpdatedData(List<ComplexProto> objects)
+    {
+
+    }
+
+    public void SetData()
+    {
+        var obj = (ComplexProto)fetcherService.GetRootObject();
+        var obj2 = (ComplexProto)fetcherService.GetRootObject();
+
+        genericObjectViewer.Init(new List<ComplexProto>() { obj, obj2 });
+    }
+}

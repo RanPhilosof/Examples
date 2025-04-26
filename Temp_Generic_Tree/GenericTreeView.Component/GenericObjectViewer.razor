@@ -1,0 +1,480 @@
+﻿@using System.Collections
+@using BlazorDownloadFile
+@using GenericTreeView.SharedTypes
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using MudBlazor
+@using System.Text.Json.Serialization
+@using System.Text.Json
+@using Newtonsoft.Json
+
+@typeparam T where T : class
+
+@inject IJSRuntime JsRuntime
+@inject IDialogService DialogService
+@* @inject IFetcherService fetcherService *@
+
+<MudPaper Width="1000px" Elevation="2" Style="transform-origin: top left;"/>
+
+<MudPaper Elevation="2" Style="transform-origin: top left; width: 100%;">
+    @if (currentPage == 0)
+    {
+        <MudGrid Justify="Justify.Center" AlignItems="AlignItems.Center" >
+            <MudItem>                
+                <MudButton Style="d-flex flex-column align-center; height: 30px;" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddItemHere">Create First Object</MudButton>
+            </MudItem>
+        </MudGrid>        
+    }
+    else
+    {
+        <MudText>Filter</MudText>
+        <MudTextField Style="height:40px;" Size="Size.Medium" Color="Color.Inherit" @bind-Value="@Filter" Label="" Variant="Variant.Outlined" />
+        <div class="nice-style">
+            <MudTreeView Items="@objectNode" Hover="true">
+                <ItemTemplate Context="item">
+                    <MudTreeViewItem Items="@item.Children" Icon="@item.Icon" Expanded="@item.Expanded">
+                    <BodyContent>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; width: 100%; grid-template-rows: 15px; height: 15px;">
+                            @if (item.Text == "root")
+                            {                            
+                                <div style="display: flex; align-items: center; position: relative;">
+                                    <MudTextField Size="Size.Medium" Style="color: #00579a;" ReadOnly="true" Value="@($"Item {currentPage}")" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    
+                                    <!-- First Icon -->
+                                    <MudIconButton Icon="@Icons.Material.Rounded.DeleteForever"
+                                                   OnClick="@(() => RemoveCurrentItem())"
+                                                   Style="position: absolute; right: 36px;" />
+
+                                    <!-- Second Icon -->
+                                    <MudIconButton Icon="@Icons.Material.TwoTone.Add"
+                                                   OnClick="@(() => AddItemHere())"
+                                                   Style="position: absolute; right: 1px;" />
+                                </div>
+                            }
+                            else
+                            {
+                                <MudTextField Size="Size.Medium" Style="color: #00579a;" ReadOnly="true" Value="@item.Text" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            }
+
+                            @if (@item.Value != null && ((@item.Value as GenericObjectNode).PropertyValue is Enum))
+                            {
+                                var enumVal = (@item.Value as GenericObjectNode).PropertyValue;
+
+                                <MudSelect ValueChanged="@((val) => OnSetEnum(@val, item.Value as GenericObjectNode))" Margin="Margin.Dense" T="string" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Text="@enumVal.ToString()">
+                                    @foreach (var val in Enum.GetNames(@item.Value.PropertyValue.GetType()))
+                                    {
+                                        <MudSelectItem T="string" Value="@val"/>
+                                    }
+                                </MudSelect>
+                            }
+                            else if (@item.Value != null)
+                            {
+                                GenericObjectNode val = (@item.Value as GenericObjectNode);
+
+                                string icon = string.Empty;
+                                Adornment iconType = Adornment.None;
+                                Action method = () => {};
+
+                                var isPotentialToBeInstantiable = @val.IsPotentialToBeInstantiable();
+
+                                if (val.CanBeRemoved)
+                                {
+                                    icon = Icons.Material.Rounded.DeleteForever;
+                                    iconType = Adornment.End;
+                                    method = () => { RemoveAt(val); };
+                                }
+                                else if (val.CanBeAdded)
+                                {
+                                    icon = Icons.Material.Rounded.Add;
+                                    iconType = Adornment.End;
+                                    method = () => { Insert(val); };
+                                }
+
+                                if (isPotentialToBeInstantiable)
+                                {
+                                    <div style="display: flex; align-items: center; position: relative;">
+
+                                            <MudTextField Style="color: #b62626"  ReadOnly="@val.IsReadonly" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@val.PropertyValueText" Label=""  />
+                                    
+                                        <!-- First Icon -->
+                                        <MudIconButton
+                                            Icon="@icon"                                            
+                                            OnClick="@method"
+                                            Style="position: absolute; right: 36px;" />
+                                    
+                                        <!-- Second Icon -->
+                                        <MudIconButton
+                                            Icon="@Icons.Material.TwoTone.Settings"
+                                            OnClick="@(() => OpenDialogAsync(val))"
+                                            Style="position: absolute; right: 1px;" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <MudTextField Size="Size.Medium" Style="color: #b62626" Adornment="@iconType" AdornmentIcon="@icon" OnAdornmentClick="@method"
+                                      ReadOnly="@val.IsReadonly" @bind-Value="@val.PropertyValueText" Label="" Variant="Variant.Outlined" Margin="Margin.Dense"/>
+                                }
+                            }
+
+                            @{
+                                var val1 = @item.Value as GenericObjectNode;
+                                if (val1 != null && val1.NameType != null)
+                                {
+                                    <MudTextField Size="Size.Medium" Color="Color.Inherit" ReadOnly="true" Value="@val1.NameTypeText" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                }
+                                else
+                                {
+                                    <MudTextField Size="Size.Medium" Color="Color.Inherit" ReadOnly="true" Value="@string.Empty" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                }
+                            }
+                        </div>
+                    </BodyContent>
+                </MudTreeViewItem>
+            </ItemTemplate>
+        </MudTreeView>
+        </div>
+        <style>
+            .nice-style {
+                max-height: 600px;
+                overflow-y: scroll;
+            }
+        </style>
+
+        <div class="d-flex flex-column align-center">
+            <MudPagination @bind-Selected="@currentPage" Rectangular="true" Variant="Variant.Filled" Count="@allObjects.Count" Class="my-4" /> @* SelectedChanged="PageChanged" *@
+        </div>
+    }
+
+    <MudGrid Direction="Column" AlignItems="Stretch" Spacing="3">
+        <MudItem Style="flex: 1;">
+            <MudGrid Justify="Justify.FlexStart">
+                <MudItem>
+                    <MudButton StartIcon="@Icons.Material.Filled.Send" Style="margin-left: 40px; margin-bottom: 10px;height: 30px;" Variant="Variant.Filled" Color="Color.Primary" OnClick="@ApplyClicked">Apply...</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem Style="flex: 1;" />
+        <MudItem Style="flex: 1;" />
+        <MudItem Style="flex: 1;">
+            <MudGrid Justify="Justify.FlexEnd">
+                <MudItem>
+                    <MudButton StartIcon="@Icons.Material.Filled.CloudDownload" Style="margin-right: 0px; margin-bottom: 10px;height: 30px;" Variant="Variant.Filled" Color="Color.Primary" OnClick="@ExportToJson">Export...</MudButton>
+                </MudItem>
+                <MudItem>
+                    <MudFileUpload T="IBrowserFile" Accept=".json" FilesChanged="UploadFiles" MaximumFileCount="100" @ref="fileUpload">
+                        <ActivatorContent>
+                            <MudButton Style="margin-right: 15px; margin-bottom: 10px; height: 30px;" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">Import...</MudButton>
+                        </ActivatorContent>
+                    </MudFileUpload>                
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    [Inject] public IBlazorDownloadFileService BlazorDownloadFileService { get; set; }
+    [Parameter] public EventCallback<List<T>> OnApplyClicked { get; set; }
+
+    private MudFileUpload<IBrowserFile> fileUpload;
+
+
+    private async void ApplyClicked()
+    {
+        await OnApplyClicked.InvokeAsync(GetOriginalObjects().Select(x => (T)x).ToList());
+    }
+
+    // TODO: Fix T type as an input and object binding as a input.
+
+    private List<object> GetOriginalObjects()
+    {
+        if (allObjects.Count > 0)
+            return allObjects.SelectMany(x => x.Select(y => y.Value.PropertyValue)).ToList();
+
+        return new List<object>();
+    }
+
+    public void Init(List<T> objects)
+    {
+        if (objects != null && objects.Count > 0)
+        {
+            allObjects = new List<List<MudBlazorCustomTreeView>>();
+
+            foreach (var obj in objects)
+            {
+                var localObjectNode = new List<MudBlazorCustomTreeView>();
+                var genericObjectNode = new GenericObjectNode(obj,
+                    (genericObject) =>
+                        {
+                            return new MudBlazorCustomTreeView() { Value = genericObject };
+                        });
+
+                var aggregator = (MudBlazorCustomTreeView)genericObjectNode.GetAggregator();
+
+                aggregator.HandleOneOf();
+
+                localObjectNode.Add(aggregator);
+                allObjects.Add(localObjectNode);
+            }
+
+            currentPage = 1;
+            objectNode = allObjects.First();
+        }
+        else
+        {
+            currentPage = 0;
+            allObjects = new List<List<MudBlazorCustomTreeView>>();
+            objectNode = null;
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ExportToJson()
+    {
+        string fileName = "genericObject.json";
+
+        var settings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.All,
+            Formatting = Formatting.Indented,
+            //NullValueHandling = NullValueHandling.Ignore,
+            //DefaultValueHandling = DefaultValueHandling.Ignore,
+            Converters = { new ProtoMessageConverter() }, //ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+        };
+
+        var json = JsonConvert.SerializeObject(GetOriginalObjects().Select(x => (T)x).ToList(), settings);
+
+        await BlazorDownloadFileService.DownloadFileFromText(fileName, json, System.Text.Encoding.UTF8, "text/plain");
+    }
+
+    private async void UploadFiles(IBrowserFile file)
+    {
+        if (file == null)
+            return;
+
+        var cancelationToken = new CancellationToken();
+        var stream = file.OpenReadStream(long.MaxValue, cancelationToken);        
+        using var streamReader = new StreamReader(stream);
+        var json = await streamReader.ReadToEndAsync();
+
+        var settings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All,
+                Formatting = Formatting.Indented,
+                //NullValueHandling = NullValueHandling.Ignore,
+                //DefaultValueHandling = DefaultValueHandling.Ignore,        
+                Converters = { new ProtoMessageConverter() },
+            };
+
+        var loadedObjects = JsonConvert.DeserializeObject<List<T>>(json, settings);
+
+        fileUpload?.ClearAsync();
+
+        Init(loadedObjects);        
+    }
+
+    private void AddItemHere()
+    {
+        var localObjectNode = new List<MudBlazorCustomTreeView>();
+        var genericObjectNode = new GenericObjectNode(Activator.CreateInstance(typeof(T)), //fetcherService.GetObjectType()),
+            (genericObject) =>
+                {
+                    return new MudBlazorCustomTreeView() { Value = genericObject };
+                });
+
+        var aggregator = (MudBlazorCustomTreeView)genericObjectNode.GetAggregator();
+
+        aggregator.HandleOneOf();        
+
+        localObjectNode.Add(aggregator);
+
+        if (allObjects == null)
+            allObjects = new List<List<MudBlazorCustomTreeView>>();
+
+        allObjects.Insert(currentPage, localObjectNode);
+
+        if (objectNode == null || objectNode.Count == 0)
+            objectNode = allObjects.First();
+
+        if (currentPage == 0 && allObjects.Count > 0)
+            currentPage = 1;
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RemoveCurrentItem()
+    {
+        if (currentPage != 0)
+        {
+            allObjects.RemoveAt(currentPage-1);
+            currentPage--;
+            if (currentPage <= 0)
+                if (allObjects.Count > 0)
+                    currentPage = 1;
+
+            if (currentPage >0)
+                PageChanged(currentPage);
+        }
+    }
+
+    private async Task OpenDialogAsync(GenericObjectNode genericObjectNode)
+    {
+        var types = genericObjectNode.GetInstantiableTypes();
+        var typesWithNames = types.ToDictionary(type => ExtensionMethods.CSharpName(type), type => type);
+
+        var optionsToSelect = typesWithNames.Keys.ToList();
+        optionsToSelect.Add("NULL");
+
+        var parameters = new DialogParameters<ConstructorDialog> { { x => x.Options,  optionsToSelect } };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true, CloseButton = true };                
+
+        var dialog = await DialogService.ShowAsync<ConstructorDialog>("Constructor Options", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            try
+            {
+                var resultData = result.Data as string;
+                if (resultData.ToLowerInvariant() == "null")
+                {
+                    genericObjectNode.UpdateValue(null);
+                }
+                else
+                {
+                    genericObjectNode.UpdateValue(typesWithNames[resultData]);
+                    var aggregator = (MudBlazorCustomTreeView)genericObjectNode.GetAggregator();
+                    aggregator.HandleOneOf();
+                }
+            }
+            catch(Exception ex)
+            {
+                await JsRuntime.InvokeVoidAsync("alert", $"Warning: {ex.Message} !"); 
+            }
+        }
+    }
+
+    private int _currentPage { get; set; } = 0;
+    private int currentPage { get { return _currentPage; } set { _currentPage = value; PageChanged(value); } }
+
+    private void PageChanged(int i)
+    {
+        //currentPage = i;
+
+        i = Math.Max(1, i);
+
+        if (i - 1 < allObjects.Count)
+            objectNode = allObjects[i-1];
+        else
+            objectNode = null;
+
+        UpdateFilter();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnSetEnum(string enumVal, GenericObjectNode genericObjectNode)
+    {
+        var m = (MudBlazorCustomTreeView)genericObjectNode.GetAggregator();
+        m.Value.PropertyValueText = enumVal;
+    }
+
+    private void Insert(GenericObjectNode genericObjectNode)
+    {
+        if (genericObjectNode.CanBeAdded)
+        {
+            genericObjectNode.AddItem();
+            
+            // TODO: Check it ??
+            var aggregator = (MudBlazorCustomTreeView)genericObjectNode.GetAggregator();
+            aggregator.HandleOneOf();
+        }
+    }
+
+    private void RemoveAt(GenericObjectNode genericObjectNode)
+    {
+        if (genericObjectNode.CanBeRemoved)
+            genericObjectNode.RemoveMe();
+    }
+
+    private string marginRight { get; set; } = "50px";
+
+    private List<List<MudBlazorCustomTreeView>> allObjects = new List<List<MudBlazorCustomTreeView>>();
+
+    private List<MudBlazorCustomTreeView> objectNode = new List<MudBlazorCustomTreeView>();
+
+    private string _filter = string.Empty;
+    private string Filter 
+    { 
+        get => _filter;
+        set { _filter = value; UpdateFilter(); }
+    }
+
+    private void UpdateFilter()
+    {
+        if (objectNode != null)
+        {
+            foreach (var obNode in objectNode)
+                SetVisibileAndExpanedFromCurrentToLeaf(obNode.Value, false, false);
+
+            foreach (var obNode in objectNode)
+                MarkFilter(obNode.Value, string.IsNullOrEmpty(Filter));
+
+            StateHasChanged();
+        }
+    }
+
+    private void MarkFilter(GenericObjectNode genericObjectNode, bool forceUnexpend = false)
+    {
+        if (genericObjectNode != null)
+        {
+            foreach (var child in genericObjectNode.PropertyChildren)
+                MarkFilter(child, forceUnexpend);
+
+            var mudBlazorCustomTreeView = (MudBlazorCustomTreeView)genericObjectNode.GetAggregator();
+
+            if ((genericObjectNode.PropertyName.ToLowerInvariant().Contains(Filter))
+                ||
+                (genericObjectNode.PropertyChildren != null 
+                 && 
+                 genericObjectNode.PropertyChildren.Count > 0 
+                 && 
+                 genericObjectNode.PropertyChildren.Any(x => x.GetAggregator() is MudBlazorCustomTreeView mudBlazorCustomTreeView1 && mudBlazorCustomTreeView1.IsVisible)))
+            //genericObjectNode.PropertyChildren.Any(x => x.PropertyName.ToLowerInvariant().Contains(Filter))))
+            {
+                mudBlazorCustomTreeView.IsVisible = true;                
+                mudBlazorCustomTreeView.Expanded = true;
+            }
+            else 
+            {
+                mudBlazorCustomTreeView.IsVisible = false;
+                mudBlazorCustomTreeView.Expanded = false;
+            }
+
+            if (forceUnexpend)
+                mudBlazorCustomTreeView.Expanded = false;
+            else if (genericObjectNode.PropertyName.ToLowerInvariant().Contains(Filter))
+            {
+                SetVisibileAndExpanedFromCurrentToLeaf(genericObjectNode, true, true);
+            }
+        }
+    }
+
+    private void SetVisibileAndExpanedFromCurrentToLeaf(GenericObjectNode genericObjectNode, bool isVisibile, bool exapnded)
+    {
+        if (genericObjectNode != null)
+        {
+            foreach (var child in genericObjectNode.PropertyChildren)
+                SetVisibileAndExpanedFromCurrentToLeaf(child, isVisibile, exapnded);
+
+            var mudBlazorCustomTreeView = (MudBlazorCustomTreeView)genericObjectNode.GetAggregator();
+            mudBlazorCustomTreeView.IsVisible = isVisibile;
+            mudBlazorCustomTreeView.Expanded = exapnded;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+    }
+}

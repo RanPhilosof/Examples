@@ -1,0 +1,243 @@
+syntax = "proto3";
+
+option csharp_namespace = "MyNamespace";
+
+
+message Level1 {
+  int32 id = 1;
+  string name = 2;
+  string field_1 = 3;
+  string field_2 = 4;
+  string field_3 = 5;
+  string field_4 = 6;
+
+  message Level2 {
+    int32 id = 1;
+    string description = 2;
+    string field_5 = 3;
+    string field_6 = 4;
+    string field_7 = 5;
+    string field_8 = 6;
+
+    message Level3 {
+      int32 id = 1;
+      repeated string tags = 2;
+      string field_9 = 3;
+      string field_10 = 4;
+      string field_11 = 5;
+      string field_12 = 6;
+
+      message Level4 {
+        int32 id = 1;
+        string metadata = 2;
+        string field_13 = 3;
+        string field_14 = 4;
+        string field_15 = 5;
+        string field_16 = 6;
+
+        message Level5 {
+          int32 id = 1;
+          oneof optional_data1 {
+            string option5_1 = 2;
+            string option5_2 = 3;
+            string option5_3 = 4;
+            string option5_4 = 5;
+            string option5_5 = 6;
+            string option5_6 = 7;
+            string option5_7 = 8;
+            string option5_8 = 9;
+            string option5_9 = 10;
+            string option5_10 = 11;
+          }
+          oneof optional_data2 {
+            int32 option2_1 = 12;
+            int32 option2_2 = 13;
+            int32 option2_3 = 14;
+            int32 option2_4 = 15;
+            int32 option2_5 = 16;
+            int32 option2_6 = 17;
+            int32 option2_7 = 18;
+            int32 option2_8 = 19;
+            int32 option2_9 = 20;
+            int32 option2_10 = 21;
+          }
+          oneof optional_data3 {
+            bool option3_1 = 22;
+            bool option3_2 = 23;
+            bool option3_3 = 24;
+            bool option3_4 = 25;
+            bool option3_5 = 26;
+            bool option3_6 = 27;
+            bool option3_7 = 28;
+            bool option3_8 = 29;
+            bool option3_9 = 30;
+            bool option3_10 = 31;
+          }
+          string field_17 = 32;
+          string field_18 = 33;
+          string field_19 = 34;
+          string field_20 = 35;
+        }
+
+        repeated Level5 nested_level5 = 7;
+        string field_21 = 8;
+        string field_22 = 9;
+        string field_23 = 10;
+        string field_24 = 11;
+      }
+
+      repeated Level4 nested_level4 = 7;
+      string field_25 = 8;
+      string field_26 = 9;
+      string field_27 = 10;
+      string field_28 = 11;
+    }
+
+    repeated Level3 nested_level3 = 7;
+    string field_29 = 8;
+    string field_30 = 9;
+    string field_31 = 10;
+    string field_32 = 11;
+  }
+
+  repeated Level2 nested_level2 = 7;
+  string field_33 = 8;
+  string field_34 = 9;
+  string field_35 = 10;
+  string field_36 = 11;
+}
+
+message Level6 {
+          int32 id = 1;
+          oneof optional_data1 {
+            string option5_1 = 2;
+            string option5_2 = 3;
+            string option5_3 = 4;
+            string option5_4 = 5;
+            string option5_5 = 6;
+            string option5_6 = 7;
+            string option5_7 = 8;
+            string option5_8 = 9;
+            string option5_9 = 10;
+            string option5_10 = 11;
+          }
+          oneof optional_data2 {
+            int32 option2_1 = 12;
+            int32 option2_2 = 13;
+            int32 option2_3 = 14;
+            int32 option2_4 = 15;
+            int32 option2_5 = 16;
+            int32 option2_6 = 17;
+            int32 option2_7 = 18;
+            int32 option2_8 = 19;
+            int32 option2_9 = 20;
+            int32 option2_10 = 21;
+          }
+          oneof optional_data3 {
+            bool option3_1 = 22;
+            bool option3_2 = 23;
+            bool option3_3 = 24;
+            bool option3_4 = 25;
+            bool option3_5 = 26;
+            bool option3_6 = 27;
+            bool option3_7 = 28;
+            bool option3_8 = 29;
+            bool option3_9 = 30;
+            bool option3_10 = 31;
+          }
+          string field_17 = 32;
+          string field_18 = 33;
+          string field_19 = 34;
+          string field_20 = 35;
+        }
+
+message Level7 {
+          oneof optional_data2 {
+            int32 option2_1 = 12;
+            int32 option2_2 = 13;
+            int32 option2_3 = 14;
+            int32 option2_4 = 15;
+            int32 option2_5 = 16;
+            int32 option2_6 = 17;
+            int32 option2_7 = 18;
+            int32 option2_8 = 19;
+            int32 option2_9 = 20;
+            int32 option2_10 = 21;
+          }
+}
+
+message ComplexProto2 {
+    Level7 level7 = 11;
+}
+
+message ComplexProto {
+  Level6 level5555 = 166;
+  int32 id = 1;
+  string name = 2;
+  repeated Level1 levels = 3;
+  repeated int32 levels2222 = 123;
+  string field_37 = 4;
+  string field_38 = 5;
+  string field_39 = 6;
+  string field_40 = 7;
+  string field_41 = 8;
+  string field_42 = 9;
+  string field_43 = 10;
+  string field_44 = 11;
+  string field_45 = 12;
+  string field_46 = 13;
+  string field_47 = 14;
+  string field_48 = 15;
+  string field_49 = 16;
+  string field_50 = 17;
+  string field_51 = 18;
+  string field_52 = 19;
+  string field_53 = 20;
+  string field_54 = 21;
+  string field_55 = 22;
+  string field_56 = 23;
+  string field_57 = 24;
+  string field_58 = 25;
+  string field_59 = 26;
+  string field_60 = 27;
+  string field_61 = 28;
+  string field_62 = 29;
+  string field_63 = 30;
+  string field_64 = 31;
+  string field_65 = 32;
+  string field_66 = 33;
+  string field_67 = 34;
+  string field_68 = 35;
+  string field_69 = 36;
+  string field_70 = 37;
+  string field_71 = 38;
+  string field_72 = 39;
+  string field_73 = 40;
+  string field_74 = 41;
+  string field_75 = 42;
+  string field_76 = 43;
+  string field_77 = 44;
+  string field_78 = 45;
+  string field_79 = 46;
+  string field_80 = 47;
+  string field_81 = 48;
+  string field_82 = 49;
+  string field_83 = 50;
+  string field_84 = 51;
+  string field_85 = 52;
+  string field_86 = 53;
+  string field_87 = 54;
+  string field_88 = 55;
+  string field_89 = 56;
+  string field_90 = 57;
+  string field_91 = 58;
+  string field_92 = 59;
+  string field_93 = 60;
+  string field_94 = 61;
+  string field_95 = 62;
+  string field_96 = 63;
+  string field_97 = 64;
+  string field_98 = 65;
+  string field_99 = 66;
+  string field_100 = 67;
+}
