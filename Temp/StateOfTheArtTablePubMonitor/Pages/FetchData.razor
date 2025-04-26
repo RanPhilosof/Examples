@@ -1,0 +1,306 @@
+﻿@page "/fetchdata"
+@using StateOfTheArtTablePubMonitor.Data
+@inject TablePublisherMonitoringService tablePublisherMonitoringService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+<h4>Favorites</h4>
+<input class="form-control mb-1" @bind="newFavoriteName" placeholder="New favorite name..." />
+<button class="btn btn-primary mb-2" @onclick="SaveFavorites" disabled="@string.IsNullOrWhiteSpace(newFavoriteName)">Save Favorite</button>
+
+@if (favorites?.Any() == true)
+{
+    <ul class="list-group mb-3">
+        @foreach (var fav in favorites)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                    @fav.Name (@fav.SavedAt.ToShortTimeString())
+                    @if (fav.IsDefault)
+                    {
+                        <span class="badge bg-success ms-2">Default</span>
+                    }
+                </span>
+                <div>
+                    <button class="btn btn-sm btn-outline-success me-1" @onclick="() => LoadFavorite(fav)">Load</button>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => ToggleDefaultFavorite(fav)">
+                        @(fav.IsDefault ? "Unset Default" : "Set as Default")
+                    </button>
+                </div>
+            </li>
+        }
+    </ul>
+
+@*     <ul class="list-group mb-3">
+        @foreach (var fav in favorites)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>@fav.Name (@fav.SavedAt.ToShortTimeString())</span>
+                <button class="btn btn-sm btn-outline-success" @onclick="() => LoadFavorite(fav)">Load</button>
+            </li>
+        }
+    </ul> *@
+}
+
+<input class="form-control mb-2" value="@pendingFilterText" @oninput="OnNameFilterChanged" placeholder="Filter by name..." />
+@* <input class="form-control mb-2" @bind="nameFilter" placeholder="Filter by name..." /> *@
+
+<div class="mb-2">
+    <input type="checkbox" class="form-check-input me-1" @bind="showOnlySelected" id="showSelectedToggle" />
+    <label for="showSelectedToggle">Show only selected</label>
+</div>
+
+@if (tablesInfo == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>AppName</th>
+                <th>Name</th>
+                <th>Guid</th>
+                <th>Available</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tableInfo in tablesInfo.Where(t => (string.IsNullOrEmpty(nameFilter) || t.Name.Contains(nameFilter, StringComparison.OrdinalIgnoreCase)) && (!showOnlySelected || t.Capture)))
+            //@foreach (var tableInfo in tablesInfo.Where(t => string.IsNullOrEmpty(nameFilter) || t.Name.Contains(nameFilter, StringComparison.OrdinalIgnoreCase)))
+            //@foreach (var tableInfo in tablesInfo)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" checked="@tableInfo.Capture" @onchange="(e => OnTableInfoChanged(tableInfo, e))" />
+                    </td>
+                    <td>@tableInfo.ApplicationName</td>
+                    <td>@tableInfo.Name</td>
+                    <td>@tableInfo.Guid</td>
+                    <td>@tableInfo.Available</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-primary mb-2" @onclick="TogglePause">
+        @(isPaused ? "Resume Refresh" : "Pause Refresh")
+    </button>
+
+    @foreach (var table in tablesData)
+    {
+        <h3>@table.TableInfo.Name</h3>
+        <p><strong>Guid:</strong> @table.TableInfo.Guid</p>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    @foreach (var header in table.TableData.FirstOrDefault() ?? new List<string>())
+                    {
+                        <th>@header</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in table.TableData.Skip(1))
+                {
+                    <tr>
+                        @foreach (var cell in row)
+                        {
+                            <td>@cell</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private bool initialized = false;
+
+    private List<ExtendedTableInfoViewModel> tablesInfo = new List<ExtendedTableInfoViewModel>();
+    private List<Table> tablesData = new List<Table>();
+    private Timer timer;
+
+    private string nameFilter = string.Empty;
+    private string pendingFilterText = string.Empty;
+    private Timer? debounceTimer;
+
+    private bool isPaused = false;
+    private bool showOnlySelected = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !initialized)
+        {
+            initialized = true;
+
+            var res = await tablePublisherMonitoringService.GetAllAppsTableInfoAsync();
+            foreach (var re in res)
+            {
+                var appName = re.Item1;
+                foreach (var r in re.Item2)
+                {
+                    var v = new ExtendedTableInfoViewModel() { ApplicationName = appName, Available = r.Available, Name = r.Name, Guid = r.Guid };
+                    tablesInfo.Add(v);
+                }
+            }
+
+            await LoadFavorites();
+
+            var defaultFavorite = favorites.FirstOrDefault(f => f.IsDefault);
+            if (defaultFavorite != null)
+            {
+                LoadFavorite(defaultFavorite); // auto-load selection
+            }
+
+            timer = new Timer(new TimerCallback((o) => UpdateTablesData()), null, 1000, 1000);
+        }
+    }
+
+    private void OnTableInfoChanged(ExtendedTableInfoViewModel? tableInfo, ChangeEventArgs e)
+    {
+        tableInfo.Capture = (bool)e.Value;
+        // Do something with the updated forecast item
+        //Console.WriteLine($"Checkbox for {tableInfo.Name} changed to {tableInfo.Available}");
+    }
+
+    private async void UpdateTablesData()
+    {
+        if (isPaused) 
+            return;
+
+        var local_tablesData = new List<Table>();
+        var dictionary = tablesInfo.GroupBy(x => x.ApplicationName).ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var dict in dictionary)
+        {
+            if (dict.Value.Count > 0 && dict.Value.Any(x => x.Capture))
+            {
+                var result = await tablePublisherMonitoringService.GetAppTableDataAsync(dict.Key, dict.Value.Where(x => x.Capture).Select(x => x.Guid).ToList());
+                local_tablesData.AddRange(result);
+            }
+        }
+
+        tablesData = local_tablesData;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void TogglePause()
+    {
+        isPaused = !isPaused;
+    }
+
+    private void OnNameFilterChanged(ChangeEventArgs e)
+    {
+        pendingFilterText = e.Value?.ToString() ?? "";
+
+        debounceTimer?.Dispose(); // Reset the timer
+        debounceTimer = new Timer(ApplyFilter, null, 1000, Timeout.Infinite);
+    }
+
+    private void ApplyFilter(object? state)
+    {
+        nameFilter = pendingFilterText;
+
+        // UI update must happen on the main thread
+        InvokeAsync(StateHasChanged);
+    }
+
+    private List<FavoriteMeasurement> favorites = new();
+    private string newFavoriteName = "";
+
+    private async Task SaveFavorites()
+    {
+        var selected = tablesInfo.Where(x => x.Capture).ToList();
+
+        if (!selected.Any()) return;
+
+        var fav = new FavoriteMeasurement
+            {
+                Name = newFavoriteName,
+                SavedAt = DateTime.Now,
+                SelectedTables = selected.Select(t => new ExtendedTableInfoViewModel
+                {
+                    ApplicationName = t.ApplicationName,
+                    Name = t.Name,
+                    Guid = t.Guid,
+                }).ToList()
+            };
+
+        favorites.Insert(0, fav);
+
+        // Keep only the latest 10
+        if (favorites.Count > 10)
+            favorites = favorites.Take(10).ToList();
+
+        await localStorage.SetItemAsync("favorites", favorites);
+
+        newFavoriteName = "";
+    }
+
+    private async Task LoadFavorites()
+    {
+        favorites = await localStorage.GetItemAsync<List<FavoriteMeasurement>>("favorites") ?? new();
+    }
+
+    private void LoadFavorite(FavoriteMeasurement fav)
+    {
+        foreach (var table in tablesInfo)
+        {
+            var match = fav.SelectedTables.FirstOrDefault(x =>
+                x.ApplicationName == table.ApplicationName &&
+                x.Name == table.Name);
+
+            table.Capture = match != null;
+        }
+    }
+
+    private async Task ToggleDefaultFavorite(FavoriteMeasurement fav)
+    {
+        LoadFavorite(fav);
+
+        foreach (var f in favorites)
+        {
+            f.IsDefault = false;
+        }
+
+        // If it's already default, we're toggling it off
+        if (!fav.IsDefault)
+            fav.IsDefault = true;
+
+        
+
+        await SaveFavorites(); // Update localStorage
+    }
+
+    public class FavoriteMeasurement
+    {
+        public string Name { get; set; } // e.g. "My Report Set 1"
+        public DateTime SavedAt { get; set; }
+        public List<ExtendedTableInfoViewModel> SelectedTables { get; set; } = new();
+        public bool IsDefault { get; set; } = false;
+
+    }
+
+    public class ExtendedTableInfoViewModel
+    {
+        public string ApplicationName { get; set; }
+        public bool Available { get; set; }
+        public string Name { get; set; }
+        public Guid Guid { get; set; }
+        public bool Capture { get; set; }
+    }
+}
