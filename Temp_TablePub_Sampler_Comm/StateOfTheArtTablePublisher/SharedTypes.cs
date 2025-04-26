@@ -1,4 +1,6 @@
-﻿using System;
+﻿using RP.Communication.ServerClient.Interface;
+using RP.Infra.Logger;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
@@ -10,25 +12,6 @@ using System.Threading.Tasks;
 
 namespace StateOfTheArtTablePublisher
 {
-    public static class GuidInt128Converter
-    {
-        public static Int128 GuidToInt128(Guid guid)
-        {
-            Span<byte> guidBytes = stackalloc byte[16];
-            guid.TryWriteBytes(guidBytes);
-            return MemoryMarshal.Read<Int128>(guidBytes);
-        }
-
-        public static Guid Int128ToGuid(Int128 value)
-        {
-            Span<byte> int128Bytes = stackalloc byte[16];
-            MemoryMarshal.Write(int128Bytes, ref value);
-
-            return new Guid(int128Bytes);
-        }
-    }
-
-
     public enum ActionType
     {
         Insert,
@@ -105,35 +88,12 @@ namespace StateOfTheArtTablePublisher
         void SlimUpdateRecord(TIn record);
     }
 
-    public interface IClientCommunication
-    {
-        void Init(long maxMessageSize);
-        void ConnectToServer();
-        event Action<byte[], long> NewMessageArrived;
-        void SendDataToServer(byte[] data, long count);
-    }
-
-    public interface IServerCommunication : IDisposable
-    {
-        void Init(long maxMessageSize);
-        event Action<Int128> OnNewClient;
-        event Action<Int128, byte[], long> OnNewClientMessage;
-        List<Int128> GetClients();
-        void SendDataToClient(Int128 clientId, byte[] data, long count);
-    }
-
     public class ClientDetail
     {
         public uint ClientId { get; set; }
     }
 
-    public interface ILogger
-    {
-        void Error(Exception ex);
-        void Error(string message);
-        void Warning(string message);
-        void Info(string message);
-    }
+
 
     public class NonBlockingCollection<T> where T : Enum
     {

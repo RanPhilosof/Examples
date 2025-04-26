@@ -10,7 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\PublisherXUnitTests\PublisherXUnitTests.csproj" />
     <ProjectReference Include="..\StateOfTheArtTablePublisher\StateOfTheArtTablePublisher.csproj" />
-    <ProjectReference Include="..\UdpCommunication\UdpCommunication.csproj" />
   </ItemGroup>
 
 </Project>

@@ -12,4 +12,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infra\RP.Infra\RP.Infra.csproj" />
+    <ProjectReference Include="..\..\ServerClientCommunication\RP.ServerClientCommunication\RP.ServerClientCommunication.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using System.Collections;
 using System.Net.NetworkInformation;
 using System.Text;
+using Udp.Communication.ByteArray.ServerClient;
 using Xunit.Abstractions;
 
 Console.WriteLine("Hello, World!");
@@ -31,7 +32,7 @@ foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
     }
     */
 
-var udpServer = new UdpServerClient.UdpServerApp(15442, 1400, 20_000, 5 * 1024*1024, 10);
+var udpServer = new UdpByteArrayServer(15442, 1400, 20_000, 5 * 1024*1024, 10);
 udpServer.StartAsync();
 
 udpServer.ClientDisconnected += UdpServer_ClientDisconnected;
@@ -55,7 +56,7 @@ void UdpServer_ClientDisconnected(System.Net.IPEndPoint obj)
     Console.WriteLine($"[{DateTime.Now}][Server] - Client Disconncted");
 }
 
-var udpClient = new UdpServerClient.UdpClientApp(
+var udpClient = new UdpByteArrayClient(
     "127.0.0.1", 
     15442, 1400, 5 * 1024 * 1024);
 udpClient.StartAsync();

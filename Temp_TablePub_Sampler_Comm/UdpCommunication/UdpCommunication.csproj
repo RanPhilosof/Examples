@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\ServerClientCommunication\Tcp.Communication.ServerClient\RP.Tcp.Communication.ServerClient.csproj" />
     <ProjectReference Include="..\StateOfTheArtTablePublisher\StateOfTheArtTablePublisher.csproj" />
   </ItemGroup>
 

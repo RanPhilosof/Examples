@@ -1,4 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestPlatform.Utilities;
+using RP.Communication.ServerClient.Interface;
+using RP.Infra.Logger;
 using StateOfTheArtTablePublisher;
 using System;
 using System.Collections.Generic;

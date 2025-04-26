@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestPlatform.Utilities;
+using RP.Communication.ServerClient.Interface;
 using StateOfTheArtTablePublisher;
 using System;
 using System.Collections.Generic;
@@ -7,9 +8,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TcpServerClient;
-using UdpCommunication;
-using UdpServerClient;
+using Tcp.Communication.ByteArray.ServerClient;
+using Udp.Communication.ByteArray.ServerClient;
 using Xunit.Abstractions;
 using static PublisherXUnitTests.StateOfTheArtTablePublisherTest;
 
@@ -36,18 +36,18 @@ namespace TablePubSubWithRealCommTests
 
             if (!useTcpComm)
             {
-                serverComm = new UdpServerApp(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
-                client1Comm = new UdpClientApp("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
-                serverGetSentMessagesCount = (serverComm as UdpServerApp).GetTotalSentMessages;
-                clientGetReceivedMessagesCount = (client1Comm as UdpClientApp).GetTotalReceivedMessages;
+                serverComm = new UdpByteArrayServer(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
+                client1Comm = new UdpByteArrayClient("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
+                serverGetSentMessagesCount = (serverComm as UdpByteArrayServer).GetTotalSentMessages;
+                clientGetReceivedMessagesCount = (client1Comm as UdpByteArrayClient).GetTotalReceivedMessages;
             }
             else
             {
-                serverComm = new TcpServerApp(7000, 20_000, 10 * 1024 * 1024, 5);
-                client1Comm = new TcpClientApp("127.0.0.1", 7000, 10 * 1024 * 1024);
+                serverComm = new TcpByteArrayServer(7000, 20_000, 10 * 1024 * 1024, 5);
+                client1Comm = new TcpByteArrayClient("127.0.0.1", 7000, 10 * 1024 * 1024);
 
-                serverGetSentMessagesCount = (serverComm as TcpServerApp).GetTotalSentMessages;
-                clientGetReceivedMessagesCount = (client1Comm as TcpClientApp).GetTotalReceivedMessages;
+                serverGetSentMessagesCount = (serverComm as TcpByteArrayServer).GetTotalSentMessages;
+                clientGetReceivedMessagesCount = (client1Comm as TcpByteArrayClient).GetTotalReceivedMessages;
             }
 
 
@@ -161,18 +161,18 @@ namespace TablePubSubWithRealCommTests
 
             if (!useTcpComm)
             {
-                serverComm = new UdpServerApp(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
-                client1Comm = new UdpClientApp("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
-                serverGetSentMessagesCount = (serverComm as UdpServerApp).GetTotalSentMessages;
-                clientGetReceivedMessagesCount = (client1Comm as UdpClientApp).GetTotalReceivedMessages;
+                serverComm = new UdpByteArrayServer(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
+                client1Comm = new UdpByteArrayClient("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
+                serverGetSentMessagesCount = (serverComm as UdpByteArrayServer).GetTotalSentMessages;
+                clientGetReceivedMessagesCount = (client1Comm as UdpByteArrayClient).GetTotalReceivedMessages;
             }
             else
             {
-                serverComm = new TcpServerApp(7000, 20_000, 10 * 1024 * 1024, 5);
-                client1Comm = new TcpClientApp("127.0.0.1", 7000, 10 * 1024 * 1024);
+                serverComm = new TcpByteArrayServer(7000, 20_000, 10 * 1024 * 1024, 5);
+                client1Comm = new TcpByteArrayClient("127.0.0.1", 7000, 10 * 1024 * 1024);
 
-                serverGetSentMessagesCount = (serverComm as TcpServerApp).GetTotalSentMessages;
-                clientGetReceivedMessagesCount = (client1Comm as TcpClientApp).GetTotalReceivedMessages;
+                serverGetSentMessagesCount = (serverComm as TcpByteArrayServer).GetTotalSentMessages;
+                clientGetReceivedMessagesCount = (client1Comm as TcpByteArrayClient).GetTotalReceivedMessages;
             }
 
             var tableSubscriber = new TableSubscriber<ExternalPerson, SlimExternalPerson, HasId>();
@@ -323,18 +323,18 @@ namespace TablePubSubWithRealCommTests
 
             if (!useTcpComm)
             {
-                serverComm = new UdpServerApp(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
-                client1Comm = new UdpClientApp("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
-                serverGetSentMessagesCount = (serverComm as UdpServerApp).GetTotalSentMessages;
-                clientGetReceivedMessagesCount = (client1Comm as UdpClientApp).GetTotalReceivedMessages;
+                serverComm = new UdpByteArrayServer(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
+                client1Comm = new UdpByteArrayClient("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
+                serverGetSentMessagesCount = (serverComm as UdpByteArrayServer).GetTotalSentMessages;
+                clientGetReceivedMessagesCount = (client1Comm as UdpByteArrayClient).GetTotalReceivedMessages;
             }
             else
             {
-                serverComm = new TcpServerApp(7000, 20_000, 10 * 1024 * 1024, 5);
-                client1Comm = new TcpClientApp("127.0.0.1", 7000, 10 * 1024 * 1024);
+                serverComm = new TcpByteArrayServer(7000, 20_000, 10 * 1024 * 1024, 5);
+                client1Comm = new TcpByteArrayClient("127.0.0.1", 7000, 10 * 1024 * 1024);
                 
-                serverGetSentMessagesCount = (serverComm as TcpServerApp).GetTotalSentMessages;
-                clientGetReceivedMessagesCount = (client1Comm as TcpClientApp).GetTotalReceivedMessages;
+                serverGetSentMessagesCount = (serverComm as TcpByteArrayServer).GetTotalSentMessages;
+                clientGetReceivedMessagesCount = (client1Comm as TcpByteArrayClient).GetTotalReceivedMessages;
             }
 
             var tableSubscriber = new TableSubscriber<ExternalPerson, SlimExternalPerson, HasId>();
@@ -457,20 +457,20 @@ namespace TablePubSubWithRealCommTests
 
             if (!useTcpComm)
             {
-                serverComm = new UdpServerApp(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
-                client1Comm = new UdpClientApp("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
-                serverGetSentMessagesCount = (serverComm as UdpServerApp).GetTotalSentMessages;
-                clientGetReceivedMessagesCount = (client1Comm as UdpClientApp).GetTotalReceivedMessages;
+                serverComm = new UdpByteArrayServer(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
+                client1Comm = new UdpByteArrayClient("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
+                serverGetSentMessagesCount = (serverComm as UdpByteArrayServer).GetTotalSentMessages;
+                clientGetReceivedMessagesCount = (client1Comm as UdpByteArrayClient).GetTotalReceivedMessages;
             }
             else
             {
-                serverComm = new TcpServerApp(7000, 20_000, 10 * 1024 * 1024, 5);
-                client1Comm = new TcpClientApp("127.0.0.1", 7000, 10 * 1024 * 1024);
+                serverComm = new TcpByteArrayServer(7000, 20_000, 10 * 1024 * 1024, 5);
+                client1Comm = new TcpByteArrayClient("127.0.0.1", 7000, 10 * 1024 * 1024);
                 
-                (serverComm as TcpServerApp).SetMissingMessagesToClient(true, 30);
+                (serverComm as TcpByteArrayServer).SetMissingMessagesToClient(true, 30);
 
-                serverGetSentMessagesCount = (serverComm as TcpServerApp).GetTotalSentMessages;
-                clientGetReceivedMessagesCount = (client1Comm as TcpClientApp).GetTotalReceivedMessages;
+                serverGetSentMessagesCount = (serverComm as TcpByteArrayServer).GetTotalSentMessages;
+                clientGetReceivedMessagesCount = (client1Comm as TcpByteArrayClient).GetTotalReceivedMessages;
             }
 
             var tableSubscriber = new TableSubscriber<ExternalPerson, SlimExternalPerson, HasId>();
@@ -547,13 +547,13 @@ namespace TablePubSubWithRealCommTests
 
             if (!useTcpComm)
             {
-                client1Comm = new UdpClientApp("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
-                clientGetReceivedMessagesCount = (client1Comm as UdpClientApp).GetTotalReceivedMessages;
+                client1Comm = new UdpByteArrayClient("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
+                clientGetReceivedMessagesCount = (client1Comm as UdpByteArrayClient).GetTotalReceivedMessages;
             }
             else
             {
-                client1Comm = new TcpClientApp("127.0.0.1", 7000, 10 * 1024 * 1024);
-                clientGetReceivedMessagesCount = (client1Comm as TcpClientApp).GetTotalReceivedMessages;
+                client1Comm = new TcpByteArrayClient("127.0.0.1", 7000, 10 * 1024 * 1024);
+                clientGetReceivedMessagesCount = (client1Comm as TcpByteArrayClient).GetTotalReceivedMessages;
             }
 
             var tableSubscriber = new TableSubscriber<ExternalPerson, SlimExternalPerson, HasId>();
@@ -578,13 +578,13 @@ namespace TablePubSubWithRealCommTests
 
                 if (!useTcpComm)
                 {
-                    serverComm = new UdpServerApp(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
-                    serverGetSentMessagesCount = (serverComm as UdpServerApp).GetTotalSentMessages;
+                    serverComm = new UdpByteArrayServer(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
+                    serverGetSentMessagesCount = (serverComm as UdpByteArrayServer).GetTotalSentMessages;
                 }
                 else
                 {
-                    serverComm = new TcpServerApp(7000, 20_000, 10 * 1024 * 1024, 5);
-                    serverGetSentMessagesCount = (serverComm as TcpServerApp).GetTotalSentMessages;
+                    serverComm = new TcpByteArrayServer(7000, 20_000, 10 * 1024 * 1024, 5);
+                    serverGetSentMessagesCount = (serverComm as TcpByteArrayServer).GetTotalSentMessages;
                 }
 
                 int nRecords = 5 + k * 50;
@@ -651,20 +651,20 @@ namespace TablePubSubWithRealCommTests
 
             if (!useTcpComm)
             {
-                serverComm = new UdpServerApp(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
-                client1Comm = new UdpClientApp("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
-                client2Comm = new UdpClientApp("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
-                serverGetSentMessagesCount = (serverComm as UdpServerApp).GetTotalSentMessages;
-                clientGetReceivedMessagesCount = (client1Comm as UdpClientApp).GetTotalReceivedMessages;
+                serverComm = new UdpByteArrayServer(7000, 8400, 20_000, 10 * 1024 * 1024, 5); // new Logger((msg) => _output.WriteLine(msg)));
+                client1Comm = new UdpByteArrayClient("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
+                client2Comm = new UdpByteArrayClient("192.168.1.177", 7000, 8400, 10 * 1024 * 1024); // new Logger((msg) => _output.WriteLine(msg)));
+                serverGetSentMessagesCount = (serverComm as UdpByteArrayServer).GetTotalSentMessages;
+                clientGetReceivedMessagesCount = (client1Comm as UdpByteArrayClient).GetTotalReceivedMessages;
             }
             else
             {
-                serverComm = new TcpServerApp(7000, 20_000, 10 * 1024 * 1024, 5);
-                client1Comm = new TcpClientApp("127.0.0.1", 7000, 10 * 1024 * 1024);
-                client2Comm = new TcpClientApp("127.0.0.1", 7000, 10 * 1024 * 1024);
+                serverComm = new TcpByteArrayServer(7000, 20_000, 10 * 1024 * 1024, 5);
+                client1Comm = new TcpByteArrayClient("127.0.0.1", 7000, 10 * 1024 * 1024);
+                client2Comm = new TcpByteArrayClient("127.0.0.1", 7000, 10 * 1024 * 1024);
 
-                serverGetSentMessagesCount = (serverComm as TcpServerApp).GetTotalSentMessages;
-                clientGetReceivedMessagesCount = (client1Comm as TcpClientApp).GetTotalReceivedMessages;
+                serverGetSentMessagesCount = (serverComm as TcpByteArrayServer).GetTotalSentMessages;
+                clientGetReceivedMessagesCount = (client1Comm as TcpByteArrayClient).GetTotalReceivedMessages;
             }
 
             var tablePublisher = new TablePublisher<InternalPerson, ExternalPerson, SlimExternalPerson, HasId>();
