@@ -10,41 +10,40 @@
 <p>This component demonstrates fetching data from a service.</p>
 
 <h4>Favorites</h4>
+
 <input class="form-control mb-1" @bind="newFavoriteName" placeholder="New favorite name..." />
 <button class="btn btn-primary mb-2" @onclick="SaveFavorites" disabled="@string.IsNullOrWhiteSpace(newFavoriteName)">Save Favorite</button>
 
 @if (favorites?.Any() == true)
 {
-    <ul class="list-group mb-3">
-        @foreach (var fav in favorites)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>
-                    @fav.Name (@fav.SavedAt.ToShortTimeString())
-                    @if (fav.IsDefault)
-                    {
-                        <span class="badge bg-success ms-2">Default</span>
-                    }
-                </span>
-                <div>
-                    <button class="btn btn-sm btn-outline-success me-1" @onclick="() => LoadFavorite(fav)">Load</button>
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => ToggleDefaultFavorite(fav)">
-                        @(fav.IsDefault ? "Unset Default" : "Set as Default")
-                    </button>
-                </div>
-            </li>
-        }
-    </ul>
+    <button class="btn btn-link mb-2" @onclick="ToggleFavoritesExpanded">
+        @(favoritesExpanded ? "Hide Favorites ▼" : "Show Favorites ▶")
+    </button>
 
-@*     <ul class="list-group mb-3">
-        @foreach (var fav in favorites)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>@fav.Name (@fav.SavedAt.ToShortTimeString())</span>
-                <button class="btn btn-sm btn-outline-success" @onclick="() => LoadFavorite(fav)">Load</button>
-            </li>
-        }
-    </ul> *@
+    @if (favoritesExpanded)
+    {
+        <ul class="list-group mb-3">
+            @foreach (var fav in favorites)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        @fav.Name (@fav.SavedAt.ToShortTimeString())
+                        @if (fav.IsDefault)
+                        {
+                            <span class="badge bg-success ms-2">Default</span>
+                        }
+                    </span>
+                    <div>
+                        <button class="btn btn-sm btn-outline-success me-1" @onclick="() => LoadFavorite(fav)">Load</button>
+                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => ToggleDefaultFavorite(fav)">
+                            @(fav.IsDefault ? "Unset Default" : "Set as Default")
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveFavorite(fav)">Remove</button>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
 }
 
 <input class="form-control mb-2" value="@pendingFilterText" @oninput="OnNameFilterChanged" placeholder="Filter by name..." />
@@ -135,6 +134,7 @@ else
 
     private bool isPaused = false;
     private bool showOnlySelected = false;
+    private bool favoritesExpanded = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -270,20 +270,51 @@ else
 
     private async Task ToggleDefaultFavorite(FavoriteMeasurement fav)
     {
-        LoadFavorite(fav);
+        // Toggle the IsDefault state
+        bool wasDefault = fav.IsDefault;
 
+        // Unset all
         foreach (var f in favorites)
         {
             f.IsDefault = false;
         }
 
-        // If it's already default, we're toggling it off
-        if (!fav.IsDefault)
+        // If it wasn't already default, set it
+        if (!wasDefault)
+        {
             fav.IsDefault = true;
+        }
 
-        
+        await localStorage.SetItemAsync("favorites", favorites);
+    }
 
-        await SaveFavorites(); // Update localStorage
+    //private async Task ToggleDefaultFavorite(FavoriteMeasurement fav)
+    //{
+    //    LoadFavorite(fav);
+    //
+    //    foreach (var f in favorites)
+    //    {
+    //        f.IsDefault = false;
+    //    }
+    //
+    //    // If it's already default, we're toggling it off
+    //    if (!fav.IsDefault)
+    //        fav.IsDefault = true;
+    //
+    //    
+    //
+    //    await SaveFavorites(); // Update localStorage
+    //}
+
+    private void ToggleFavoritesExpanded()
+    {
+        favoritesExpanded = !favoritesExpanded;
+    }
+
+    private async Task RemoveFavorite(FavoriteMeasurement fav)
+    {
+        favorites.Remove(fav);
+        await localStorage.SetItemAsync("favorites", favorites);
     }
 
     public class FavoriteMeasurement
