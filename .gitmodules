@@ -1,0 +1,20 @@
+[submodule "Ranner"]
+	path = Ranner
+	url = https://github.com/RanPhilosof/Ranner
+	branch = main
+[submodule "TablePublisher"]
+	path = TablePublisher
+	url = https://github.com/RanPhilosof/TablePublisher
+	branch = main
+[submodule "Sampler"]
+	path = Sampler
+	url = https://github.com/RanPhilosof/Sampler
+	branch = main
+[submodule "GenericTreeView"]
+	path = GenericTreeView
+	url = https://github.com/RanPhilosof/GenericTreeView
+	branch = main
+[submodule "ServerClientCommunication"]
+	path = ServerClientCommunication
+	url = https://github.com/RanPhilosof/ServerClientCommunication
+	branch = main
