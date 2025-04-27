@@ -5,23 +5,35 @@ VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StateOfTheArtTablePublisher", "StateOfTheArtTablePublisher\StateOfTheArtTablePublisher.csproj", "{B5EF4F8C-918B-4823-B22C-3AE4239710F6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{27C55A9B-9711-4DE3-BC3E-978B379D2CC2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublisherXUnitTests", "PublisherXUnitTests\PublisherXUnitTests.csproj", "{7DB47152-8C40-4743-8BB9-EA7A34971109}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{A73EB682-1967-4D08-8035-92C8770CD39B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StateOfTheArtTablePubMonitor", "StateOfTheArtTablePubMonitor\StateOfTheArtTablePubMonitor.csproj", "{0EA0FFFD-3374-4458-8A69-0F29F3706362}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestTestApp", "RestTestApp\RestTestApp.csproj", "{D533C4DA-13B5-4BEC-AD08-40A850DEC62B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.Tcp.Communication.ServerClient", "..\ServerClientCommunication\Tcp.Communication.ServerClient\RP.Tcp.Communication.ServerClient.csproj", "{EE5A2740-C87E-4754-8CF3-12150C9DE866}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.Tcp.Communication.ServerClient", "..\ServerClientCommunication\Tcp.Communication.ServerClient\RP.Tcp.Communication.ServerClient.csproj", "{EE5A2740-C87E-4754-8CF3-12150C9DE866}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.Infra", "..\Infra\RP.Infra\RP.Infra.csproj", "{FD489671-BA41-46C5-9339-14C6771CFE71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.Infra", "..\Infra\RP.Infra\RP.Infra.csproj", "{FD489671-BA41-46C5-9339-14C6771CFE71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.ServerClientCommunication", "..\ServerClientCommunication\RP.ServerClientCommunication\RP.ServerClientCommunication.csproj", "{A8ACA620-EB34-4672-9CE0-B9F63C49534F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.ServerClientCommunication", "..\ServerClientCommunication\RP.ServerClientCommunication\RP.ServerClientCommunication.csproj", "{A8ACA620-EB34-4672-9CE0-B9F63C49534F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.Udp.Communication.ServerClient", "..\ServerClientCommunication\RP.Udp.Communication.ServerClient\RP.Udp.Communication.ServerClient.csproj", "{35C36811-2D25-4507-A105-B1CD7CB14CFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.Udp.Communication.ServerClient", "..\ServerClientCommunication\RP.Udp.Communication.ServerClient\RP.Udp.Communication.ServerClient.csproj", "{35C36811-2D25-4507-A105-B1CD7CB14CFD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{AE341563-A975-44F8-A38B-6F6F19461578}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerClientCommunication", "ServerClientCommunication", "{06E6940E-392D-4B4B-94A0-8B435F262493}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{DDFE5661-BB02-45B1-812F-BCB51CB143E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TablePublisher", "TablePublisher", "{28BFED87-E72D-4D58-99C7-8EC439FC1F24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.TablePublisher", "..\TablePublisher\RP.TablePublisher\RP.TablePublisher.csproj", "{CCF352FE-6BD7-40A3-BAD3-635DFBD4F5E1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{0DCB6267-EBFF-4492-809E-8E06BE054658}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.TablePublisher.XUnitTests", "..\TablePublisher\UnitTests\RP.TablePublisher.XUnitTests\RP.TablePublisher.XUnitTests.csproj", "{73FC5AA3-A9D4-4CCD-ABA6-D8FD2A342DC9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prober", "Prober", "{E6CEA578-0F92-40F3-BFF0-FBD8F511AF37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.Prober", "..\Prober\RP.Prober\RP.Prober.csproj", "{07F76BAE-1652-4269-9E49-3CBFE0F4A663}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,14 +45,6 @@ Global
 		{B5EF4F8C-918B-4823-B22C-3AE4239710F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5EF4F8C-918B-4823-B22C-3AE4239710F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5EF4F8C-918B-4823-B22C-3AE4239710F6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7DB47152-8C40-4743-8BB9-EA7A34971109}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7DB47152-8C40-4743-8BB9-EA7A34971109}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7DB47152-8C40-4743-8BB9-EA7A34971109}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7DB47152-8C40-4743-8BB9-EA7A34971109}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A73EB682-1967-4D08-8035-92C8770CD39B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A73EB682-1967-4D08-8035-92C8770CD39B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A73EB682-1967-4D08-8035-92C8770CD39B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A73EB682-1967-4D08-8035-92C8770CD39B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0EA0FFFD-3374-4458-8A69-0F29F3706362}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0EA0FFFD-3374-4458-8A69-0F29F3706362}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EA0FFFD-3374-4458-8A69-0F29F3706362}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -65,13 +69,32 @@ Global
 		{35C36811-2D25-4507-A105-B1CD7CB14CFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35C36811-2D25-4507-A105-B1CD7CB14CFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35C36811-2D25-4507-A105-B1CD7CB14CFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCF352FE-6BD7-40A3-BAD3-635DFBD4F5E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCF352FE-6BD7-40A3-BAD3-635DFBD4F5E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCF352FE-6BD7-40A3-BAD3-635DFBD4F5E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCF352FE-6BD7-40A3-BAD3-635DFBD4F5E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73FC5AA3-A9D4-4CCD-ABA6-D8FD2A342DC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73FC5AA3-A9D4-4CCD-ABA6-D8FD2A342DC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73FC5AA3-A9D4-4CCD-ABA6-D8FD2A342DC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73FC5AA3-A9D4-4CCD-ABA6-D8FD2A342DC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07F76BAE-1652-4269-9E49-3CBFE0F4A663}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07F76BAE-1652-4269-9E49-3CBFE0F4A663}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07F76BAE-1652-4269-9E49-3CBFE0F4A663}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07F76BAE-1652-4269-9E49-3CBFE0F4A663}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{7DB47152-8C40-4743-8BB9-EA7A34971109} = {27C55A9B-9711-4DE3-BC3E-978B379D2CC2}
-		{A73EB682-1967-4D08-8035-92C8770CD39B} = {27C55A9B-9711-4DE3-BC3E-978B379D2CC2}
+		{EE5A2740-C87E-4754-8CF3-12150C9DE866} = {06E6940E-392D-4B4B-94A0-8B435F262493}
+		{FD489671-BA41-46C5-9339-14C6771CFE71} = {AE341563-A975-44F8-A38B-6F6F19461578}
+		{A8ACA620-EB34-4672-9CE0-B9F63C49534F} = {06E6940E-392D-4B4B-94A0-8B435F262493}
+		{35C36811-2D25-4507-A105-B1CD7CB14CFD} = {06E6940E-392D-4B4B-94A0-8B435F262493}
+		{DDFE5661-BB02-45B1-812F-BCB51CB143E6} = {06E6940E-392D-4B4B-94A0-8B435F262493}
+		{CCF352FE-6BD7-40A3-BAD3-635DFBD4F5E1} = {28BFED87-E72D-4D58-99C7-8EC439FC1F24}
+		{0DCB6267-EBFF-4492-809E-8E06BE054658} = {28BFED87-E72D-4D58-99C7-8EC439FC1F24}
+		{73FC5AA3-A9D4-4CCD-ABA6-D8FD2A342DC9} = {0DCB6267-EBFF-4492-809E-8E06BE054658}
+		{07F76BAE-1652-4269-9E49-3CBFE0F4A663} = {E6CEA578-0F92-40F3-BFF0-FBD8F511AF37}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {45E81C79-46D0-44D8-B4C1-401AE7FBAA7E}

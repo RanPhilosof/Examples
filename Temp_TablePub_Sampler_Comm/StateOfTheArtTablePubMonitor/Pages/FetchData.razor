@@ -1,6 +1,6 @@
 ﻿@page "/fetchdata"
 @using StateOfTheArtTablePubMonitor.Data
-@inject TablePublisherMonitoringService tablePublisherMonitoringService
+@inject ProberCacheMonitoringService proberCacheMonitoringService
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 <PageTitle>Weather forecast</PageTitle>
@@ -146,7 +146,7 @@ else
         {
             initialized = true;
 
-            var res = await tablePublisherMonitoringService.GetAllAppsTableInfoAsync();
+            var res = await proberCacheMonitoringService.GetAllAppsTableInfoAsync();
             foreach (var re in res)
             {
                 var appName = re.Item1;
@@ -188,7 +188,7 @@ else
         {
             if (dict.Value.Count > 0 && dict.Value.Any(x => x.Capture))
             {
-                var result = await tablePublisherMonitoringService.GetAppTableDataAsync(dict.Key, dict.Value.Where(x => x.Capture).Select(x => x.Guid).ToList());
+                var result = await proberCacheMonitoringService.GetAppTableDataAsync(dict.Key, dict.Value.Where(x => x.Capture).Select(x => x.Guid).ToList());
                 local_tablesData.AddRange(result);
             }
         }

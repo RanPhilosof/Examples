@@ -6,10 +6,6 @@
 	path = TablePublisher
 	url = https://github.com/RanPhilosof/TablePublisher
 	branch = main
-[submodule "Sampler"]
-	path = Sampler
-	url = https://github.com/RanPhilosof/Sampler
-	branch = main
 [submodule "GenericTreeView"]
 	path = GenericTreeView
 	url = https://github.com/RanPhilosof/GenericTreeView
@@ -21,4 +17,8 @@
 [submodule "Infra"]
 	path = Infra
 	url = https://github.com/RanPhilosof/Infra
+	branch = main
+[submodule "Prober"]
+	path = Prober
+	url = https://github.com/RanPhilosof/Prober
 	branch = main

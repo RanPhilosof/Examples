@@ -184,8 +184,8 @@ namespace RestTestApp
 
             Console.WriteLine($"Total Updated {sentPerTotalUpdates}, LastReceived {receivedPerTotalUpdates}");
 
-            var cachedTablesNames = TablePublisherClub.TablePublisherClubSingleton.GetCachedTablesNames().Select(x => x.Guid).ToList();
-            var cachedTables = TablePublisherClub.TablePublisherClubSingleton.GetCachedTables(cachedTablesNames);
+            var cachedTablesNames = ProberCacheClub.ProberCacheClubSingleton.GetCachedTablesNames().Select(x => x.Guid).ToList();
+            var cachedTables = ProberCacheClub.ProberCacheClubSingleton.GetCachedTables(cachedTablesNames);
 
         }
 

@@ -69,11 +69,11 @@ namespace StateOfTheArtTablePubMonitor.Data
         public List<List<string>> TableData { get; set; }
     }
 
-    public class TablePublisherMonitoringService
+    public class ProberCacheMonitoringService
     {
         private Dictionary<string, HttpClient> appsThatSupportMonitoring = new Dictionary<string, HttpClient>();
 
-        public TablePublisherMonitoringService()
+        public ProberCacheMonitoringService()
         {
             Environment.SetEnvironmentVariable("Services:RanBlazor:Ip", "127.0.0.1");
             Environment.SetEnvironmentVariable("Services:RanBlazor:RestApiPort", "7287");
@@ -158,7 +158,7 @@ namespace StateOfTheArtTablePubMonitor.Data
 
         public List<ExtendedTableInfo> GetAppTableInfo(HttpClient http)
         {
-            List<ExtendedTableInfo>? result = http.GetFromJsonAsync<List<ExtendedTableInfo>>($"api/TablePublisherMonitoring/CachedTablesNames").GetAwaiter().GetResult();
+            List<ExtendedTableInfo>? result = http.GetFromJsonAsync<List<ExtendedTableInfo>>($"api/ProberCacheMonitoring/CachedTablesNames").GetAwaiter().GetResult();
 
             return result ?? new List<ExtendedTableInfo>();
         }
@@ -170,7 +170,7 @@ namespace StateOfTheArtTablePubMonitor.Data
 
         public List<Table> GetAppTableData(HttpClient client, List<Guid> guids)
         {
-            var response = client.PostAsJsonAsync($"api/TablePublisherMonitoring/CachedTables", guids).GetAwaiter().GetResult();
+            var response = client.PostAsJsonAsync($"api/ProberCacheMonitoring/CachedTables", guids).GetAwaiter().GetResult();
 
             if (response.IsSuccessStatusCode)
                 return response.Content.ReadFromJsonAsync<List<Table>>().Result ?? new List<Table>();
