@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 using RP.Communication.ServerClient.Interface;
-using StateOfTheArtTablePublisher;
+using RP.Prober.Singleton;
+using RP.TablePublisherSubscriber;
 using System.Diagnostics;
 using Tcp.Communication.ByteArray.ServerClient;
 using Udp.Communication.ByteArray.ServerClient;

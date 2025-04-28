@@ -12,8 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PublisherXUnitTests\PublisherXUnitTests.csproj" />
-    <ProjectReference Include="..\StateOfTheArtTablePublisher\StateOfTheArtTablePublisher.csproj" />
+    <ProjectReference Include="..\..\Prober\RP.Prober\RP.Prober.csproj" />
+    <ProjectReference Include="..\..\TablePublisher\RP.TablePublisher\RP.TablePublisher.csproj" />
+    <ProjectReference Include="..\..\TablePublisher\UnitTests\RP.TablePublisher.XUnitTests\RP.TablePublisher.XUnitTests.csproj" />
   </ItemGroup>
 
 </Project>

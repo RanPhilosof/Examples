@@ -96,8 +96,30 @@ else
     {
         <h3>@table.TableInfo.Name</h3>
         <p><strong>Guid:</strong> @table.TableInfo.Guid</p>
+@* 
+        <style>
+            .my-custom-table td, .my-custom-table th {
+                white-space: nowrap;
+                vertical-align: middle;
+                text-align: left !important;
+            }
+        </style> *@
+        <style>
+            @* .my-custom-table {
+                border-collapse: collapse;
+                width: 100%;
+            } *@
 
-        <table class="table">
+                .my-custom-table th,
+                .my-custom-table td {
+                    border: 1px solid #ccc; /* Grid lines */
+                    padding: 0.5rem 1rem; /* Space inside each cell */
+                    text-align: left !important; /* Align text to the left */
+                    white-space: nowrap;
+                    vertical-align: middle;
+                }
+        </style>
+        <table class="my-custom-table">
             <thead>
                 <tr>
                     @foreach (var header in table.TableData.FirstOrDefault() ?? new List<string>())
