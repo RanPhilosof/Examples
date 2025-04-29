@@ -92,33 +92,66 @@ else
         @(isPaused ? "Resume Refresh" : "Pause Refresh")
     </button>
 
-    @foreach (var table in tablesData)
-    {
-        <h3>@table.TableInfo.Name</h3>
-        <p><strong>Guid:</strong> @table.TableInfo.Guid</p>
-@* 
-        <style>
-            .my-custom-table td, .my-custom-table th {
-                white-space: nowrap;
-                vertical-align: middle;
-                text-align: left !important;
-            }
-        </style> *@
-        <style>
-            @* .my-custom-table {
-                border-collapse: collapse;
-                width: 100%;
-            } *@
+    <style>
+    .tabs {
+        display: flex;
+        border-bottom: 2px solid #ccc;
+        margin-bottom: 1rem;
+        cursor: pointer;
+    }
 
-                .my-custom-table th,
-                .my-custom-table td {
-                    border: 1px solid #ccc; /* Grid lines */
-                    padding: 0.5rem 1rem; /* Space inside each cell */
-                    text-align: left !important; /* Align text to the left */
-                    white-space: nowrap;
-                    vertical-align: middle;
-                }
-        </style>
+    .tab {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ccc;
+        border-bottom: none;
+        background-color: #f1f1f1;
+        margin-right: 4px;
+    }
+
+    .tab.active {
+        background-color: white;
+        font-weight: bold;
+        border-top: 2px solid #007bff;
+        border-left: 1px solid #ccc;
+        border-right: 1px solid #ccc;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .my-custom-table th,
+    .my-custom-table td {
+        border: 1px solid #ccc;
+        padding: 0.5rem 1rem;
+        text-align: left !important;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .my-custom-table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+</style>
+
+<div class="tabs" id="tab-buttons">
+    @for (int i = 0; i < tablesData.Count; i++)
+    {
+            <div class="tab @(i == 0 ? "active" : "")" onclick="showTab(@i)">@tablesData[i].TableInfo.Name</div>
+    }
+</div>
+
+@for (int i = 0; i < tablesData.Count; i++)
+{
+    var table = tablesData[i];
+    <div class="tab-content @(i == 0 ? "active" : "")" id="tab-content-@i">        
+        <p><strong>Guid:</strong> @table.TableInfo.Guid</p>
+
         <table class="my-custom-table">
             <thead>
                 <tr>
@@ -140,10 +173,25 @@ else
                 }
             </tbody>
         </table>
+    </div>
+}
+
+<script>
+    function showTab(index) {
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => tab.classList.remove('active'));
+        contents.forEach(content => content.classList.remove('active'));
+
+        tabs[index].classList.add('active');
+        contents[index].classList.add('active');
     }
+</script>
 }
 
 @code {
+    int tabIndex = 0;
     private bool initialized = false;
 
     private List<ExtendedTableInfoViewModel> tablesInfo = new List<ExtendedTableInfoViewModel>();
