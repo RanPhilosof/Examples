@@ -3,11 +3,7 @@
 @inject ProberCacheMonitoringService proberCacheMonitoringService
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
-<PageTitle>Weather forecast</PageTitle>
-
-<h1>Weather forecast</h1>
-
-<p>This component demonstrates fetching data from a service.</p>
+<PageTitle>Prober</PageTitle>
 
 <h4>Favorites</h4>
 
@@ -68,12 +64,11 @@ else
                 <th>Name</th>
                 <th>Guid</th>
                 <th>Available</th>
+                <th>Group Index</th> @* New column *@
             </tr>
         </thead>
         <tbody>
             @foreach (var tableInfo in tablesInfo.Where(t => (string.IsNullOrEmpty(nameFilter) || t.Name.Contains(nameFilter, StringComparison.OrdinalIgnoreCase)) && (!showOnlySelected || t.Capture)))
-            //@foreach (var tableInfo in tablesInfo.Where(t => string.IsNullOrEmpty(nameFilter) || t.Name.Contains(nameFilter, StringComparison.OrdinalIgnoreCase)))
-            //@foreach (var tableInfo in tablesInfo)
             {
                 <tr>
                     <td>
@@ -83,6 +78,15 @@ else
                     <td>@tableInfo.Name</td>
                     <td>@tableInfo.Guid</td>
                     <td>@tableInfo.Available</td>
+                    <td>
+                        <select class="form-select" @bind="tableInfo.GroupIndex">
+                            <option value="-1">Default</option>
+                            @for (int i = 0; i < 10; i++)
+                            {
+                                <option value="@i">Group @i</option>
+                            }
+                        </select>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -139,42 +143,60 @@ else
     }
 </style>
 
-<div class="tabs" id="tab-buttons">
+@* <div class="tabs" id="tab-buttons">
     @for (int i = 0; i < tablesData.Count; i++)
     {
             <div class="tab @(i == 0 ? "active" : "")" onclick="showTab(@i)">@tablesData[i].TableInfo.Name</div>
     }
-</div>
-
-@for (int i = 0; i < tablesData.Count; i++)
-{
-    var table = tablesData[i];
-    <div class="tab-content @(i == 0 ? "active" : "")" id="tab-content-@i">        
-        <p><strong>Guid:</strong> @table.TableInfo.Guid</p>
-
-        <table class="my-custom-table">
-            <thead>
-                <tr>
-                    @foreach (var header in table.TableData.FirstOrDefault() ?? new List<string>())
-                    {
-                        <th>@header</th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var row in table.TableData.Skip(1))
-                {
-                    <tr>
-                        @foreach (var cell in row)
-                        {
-                            <td>@cell</td>
-                        }
-                    </tr>
-                }
-            </tbody>
-        </table>
+</div> *@
+    <div class="tabs" id="tab-buttons">
+        @for (int i = 0; i < groupedTables.Count; i++)
+        {
+            var groupIndex = groupedTables.Keys.ElementAt(i);
+            <div class="tab @(i == 0 ? "active" : "")" onclick="showTab(@i)">
+                @(groupIndex == -1 ? "Default Group" : $"Group {groupIndex}")
+            </div>
+        }
     </div>
-}
+
+    @for (int i = 0; i < groupedTables.Count; i++)
+    {
+        var group = groupedTables.ElementAt(i);
+        var groupIndex = group.Key;
+        var tables = group.Value;
+
+        <div class="tab-content @(i == 0 ? "active" : "")" id="tab-content-@i">            
+
+            @foreach (var table in tables)
+            {
+                <div class="table-container mb-4">                    
+                    <p>@table.TableInfo.Name (<strong>Guid:</strong> @table.TableInfo.Guid)</p>
+
+                    <table class="my-custom-table">
+                        <thead>
+                            <tr>
+                                @foreach (var header in table.TableData.FirstOrDefault() ?? new List<string>())
+                                {
+                                    <th>@header</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in table.TableData.Skip(1))
+                            {
+                                <tr>
+                                    @foreach (var cell in row)
+                                    {
+                                        <td>@cell</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
 
 <script>
     function showTab(index) {
@@ -205,6 +227,14 @@ else
     private bool isPaused = false;
     private bool showOnlySelected = false;
     private bool favoritesExpanded = false;
+
+    private Dictionary<int, List<Table>> groupedTables =>
+        tablesData
+            .GroupBy(t =>
+            {
+                var match = tablesInfo.FirstOrDefault(x => x.Guid == t.TableInfo.Guid);
+                return match?.GroupIndex ?? -1;
+            }).ToDictionary(g => g.Key, g => g.ToList());
 
     protected override async Task OnInitializedAsync()
     {
@@ -307,6 +337,7 @@ else
                     ApplicationName = t.ApplicationName,
                     Name = t.Name,
                     Guid = t.Guid,
+                    GroupIndex = t.GroupIndex,
                 }).ToList()
             };
 
@@ -334,7 +365,16 @@ else
                 x.ApplicationName == table.ApplicationName &&
                 x.Name == table.Name);
 
-            table.Capture = match != null;
+            if (match != null)
+            {
+                table.Capture = true;
+                table.GroupIndex = match.GroupIndex;
+            }
+            else
+            {
+                table.Capture = false;
+                table.GroupIndex = -1;
+            }
         }
     }
 
@@ -393,7 +433,6 @@ else
         public DateTime SavedAt { get; set; }
         public List<ExtendedTableInfoViewModel> SelectedTables { get; set; } = new();
         public bool IsDefault { get; set; } = false;
-
     }
 
     public class ExtendedTableInfoViewModel
@@ -403,5 +442,6 @@ else
         public string Name { get; set; }
         public Guid Guid { get; set; }
         public bool Capture { get; set; }
+        public int GroupIndex { get; set; } = -1; // -1 = default group
     }
 }
