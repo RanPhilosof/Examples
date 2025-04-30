@@ -31,31 +31,22 @@
         }
         else
         {
-            @foreach (var line in liveLogs.Select((text, i) => new { text, i }))
+@*             @foreach (var line in liveLogs.Select((text, i) => new { text, i }))
             {
                 <div>
                     <code id="log-line-@line.i">@line.text</code>
                 </div>
-            }
+            } *@
+
+                            @foreach (var line in liveLogs.Select((text, i) => new { text, i }))
+                            {
+                                <div>
+                                    <pre id="log-line-@line.i" class="log-line" @onclick="() => SelectLogLine(line.i)">@line.text</pre>
+                                </div>
+                            }
         }
     </div>
 </div>
-
-@*                 <div class="modal-body" style="max-height: 400px; overflow-y: auto;" @ref="logContainerRef">
-                    @foreach (var line in liveLogs.Select((text, i) => new { text, i }))
-                    {
-                        <div>
-                            <code id="log-line-@line.i">@line.text</code>
-                        </div>
-                    }
-                </div> *@
-
-@*                 <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
-                    @foreach (var line in liveLogs)
-                    {
-                        <div><code>@line</code></div>
-                    }
-                </div> *@
                 <div class="modal-footer">
                     <button class="btn btn-outline-primary me-2" @onclick="ToggleAutoScroll">
                         @(autoScrollEnabled ? "Pause Auto-Scroll" : "Resume Auto-Scroll")
@@ -278,6 +269,20 @@ else
             if (logs.length > 0) {
                 logs[logs.length - 1].scrollIntoView({ behavior: 'smooth' });
             }
+        }
+    </script>
+
+    <script>
+        function selectTextById(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            const range = document.createRange();
+            range.selectNodeContents(el);
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
         }
     </script>
 }
@@ -563,5 +568,10 @@ else
     private void ToggleAutoScroll()
     {
         autoScrollEnabled = !autoScrollEnabled;
+    }
+
+    private async Task SelectLogLine(int index)
+    {
+        await JS.InvokeVoidAsync("selectTextById", $"log-line-{index}");
     }
 }
