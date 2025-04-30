@@ -15,7 +15,8 @@
 @if (logPopupVisible)
 {
     <div class="modal-backdrop fade show"></div>
-    <div class="modal d-block" tabindex="-1">
+    @* <div class="modal d-block" tabindex="-1"> *@
+    <div class="modal d-block draggable-modal" tabindex="-1" @ref="draggableModalRef">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -23,7 +24,8 @@
                     <button type="button" class="btn-close" @onclick="ToggleLogPopup"></button>
                 </div>
 
-<div class="modal-body" style="max-height: 400px; overflow-y: auto;" @ref="logContainerRef">
+@* <div class="modal-body" style="max-height: 400px; overflow-y: auto;" @ref="logContainerRef"> *@
+                <div class="modal-body" style="max-height: 400px; overflow-y: auto;" data-log-container>
     <div style="min-height: 400px;">
         @if (!liveLogs.Any())
         {
@@ -265,9 +267,11 @@ else
 </script>
     <script>
         function scrollToLastLogLine() {
-            const logs = document.querySelectorAll('[id^="log-line-"]');
-            if (logs.length > 0) {
-                logs[logs.length - 1].scrollIntoView({ behavior: 'smooth' });
+            const container = document.querySelector('[data-log-container]');
+            const logs = container?.querySelectorAll('[id^="log-line-"]');
+            if (logs?.length > 0) {
+                const lastLog = logs[logs.length - 1];
+                container.scrollTop = container.scrollHeight;
             }
         }
     </script>
@@ -285,6 +289,78 @@ else
             selection.addRange(range);
         }
     </script>
+
+    <style>
+        .draggable-modal {
+            position: absolute;
+            top: 100px;
+            left: 100px;
+            resize: both;
+            overflow: auto;
+            max-width: 95%;
+            max-height: 95%;
+            min-width: 300px;
+            min-height: 200px;
+            z-index: 1050;
+        }
+
+            .draggable-modal .modal-dialog {
+                margin: 0;
+                pointer-events: auto;
+            }
+
+            .draggable-modal .modal-header {
+                cursor: move;
+                user-select: none;
+            }
+    </style>
+
+    <script>
+        let dragData = null;
+
+        document.addEventListener('mousedown', function (e) {
+            if (e.target.closest('.modal-header')) {
+                const modal = e.target.closest('.draggable-modal');
+                dragData = {
+                    element: modal,
+                    offsetX: e.clientX - modal.offsetLeft,
+                    offsetY: e.clientY - modal.offsetTop
+                };
+            }
+        });
+
+        document.addEventListener('mousemove', function (e) {
+            if (dragData) {
+                const { element, offsetX, offsetY } = dragData;
+                element.style.left = (e.clientX - offsetX) + 'px';
+                element.style.top = (e.clientY - offsetY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', function () {
+            dragData = null;
+        });
+    </script>
+
+    <style>
+        body.modal-open {
+            overflow: hidden !important;
+        }
+
+        .modal.d-block {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1050;
+        }
+
+        .modal-dialog {
+            margin: 2rem auto;
+        }
+    </style>
 }
 
 @code {
@@ -535,13 +611,13 @@ else
         }, null, 0, 1000);
     }
 
-    private void ToggleLogPopup()
+    private async void ToggleLogPopup()
     {
         logPopupVisible = !logPopupVisible;
 
         if (logPopupVisible)
         {
-            
+            await JS.InvokeVoidAsync("document.body.classList.add", "modal-open");
 
             logRefreshTimer = new Timer(async _ =>
             {
@@ -558,6 +634,7 @@ else
         }
         else
         {
+            await JS.InvokeVoidAsync("document.body.classList.remove", "modal-open");
             logRefreshTimer?.Dispose();
             logRefreshTimer = null;
         }
@@ -574,4 +651,7 @@ else
     {
         await JS.InvokeVoidAsync("selectTextById", $"log-line-{index}");
     }
+
+    private ElementReference draggableModalRef;
+
 }
