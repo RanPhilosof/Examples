@@ -1,9 +1,71 @@
 ﻿@page "/fetchdata"
-@using StateOfTheArtTablePubMonitor.Data
+@using Prober.Consumer.Service
+@using RP.Prober.Singleton
 @inject ProberCacheMonitoringService proberCacheMonitoringService
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject IJSRuntime JS
 
 <PageTitle>Prober</PageTitle>
+
+@* <button class="btn btn-secondary mb-2" @onclick="ToggleLogPopup">Show Console Logs</button> *@
+<button class="btn mb-2 @(hasNewLogs ? "btn-danger" : "btn-secondary")" @onclick="ToggleLogPopup">
+    Show Console Logs
+</button>
+
+@if (logPopupVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Console Logs (Live)</h5>
+                    <button type="button" class="btn-close" @onclick="ToggleLogPopup"></button>
+                </div>
+
+<div class="modal-body" style="max-height: 400px; overflow-y: auto;" @ref="logContainerRef">
+    <div style="min-height: 400px;">
+        @if (!liveLogs.Any())
+        {
+            <em>No logs yet.</em>
+        }
+        else
+        {
+            @foreach (var line in liveLogs.Select((text, i) => new { text, i }))
+            {
+                <div>
+                    <code id="log-line-@line.i">@line.text</code>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@*                 <div class="modal-body" style="max-height: 400px; overflow-y: auto;" @ref="logContainerRef">
+                    @foreach (var line in liveLogs.Select((text, i) => new { text, i }))
+                    {
+                        <div>
+                            <code id="log-line-@line.i">@line.text</code>
+                        </div>
+                    }
+                </div> *@
+
+@*                 <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                    @foreach (var line in liveLogs)
+                    {
+                        <div><code>@line</code></div>
+                    }
+                </div> *@
+                <div class="modal-footer">
+                    <button class="btn btn-outline-primary me-2" @onclick="ToggleAutoScroll">
+                        @(autoScrollEnabled ? "Pause Auto-Scroll" : "Resume Auto-Scroll")
+                    </button>
+                    <button class="btn btn-secondary" @onclick="ToggleLogPopup">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 <h4>Favorites</h4>
 
@@ -210,6 +272,14 @@ else
         contents[index].classList.add('active');
     }
 </script>
+    <script>
+        function scrollToLastLogLine() {
+            const logs = document.querySelectorAll('[id^="log-line-"]');
+            if (logs.length > 0) {
+                logs[logs.length - 1].scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
 }
 
 @code {
@@ -266,6 +336,8 @@ else
             }
 
             timer = new Timer(new TimerCallback((o) => UpdateTablesData()), null, 1000, 1000);
+            
+            StartLogWatcher();
         }
     }
 
@@ -398,24 +470,6 @@ else
         await localStorage.SetItemAsync("favorites", favorites);
     }
 
-    //private async Task ToggleDefaultFavorite(FavoriteMeasurement fav)
-    //{
-    //    LoadFavorite(fav);
-    //
-    //    foreach (var f in favorites)
-    //    {
-    //        f.IsDefault = false;
-    //    }
-    //
-    //    // If it's already default, we're toggling it off
-    //    if (!fav.IsDefault)
-    //        fav.IsDefault = true;
-    //
-    //    
-    //
-    //    await SaveFavorites(); // Update localStorage
-    //}
-
     private void ToggleFavoritesExpanded()
     {
         favoritesExpanded = !favoritesExpanded;
@@ -443,5 +497,71 @@ else
         public Guid Guid { get; set; }
         public bool Capture { get; set; }
         public int GroupIndex { get; set; } = -1; // -1 = default group
+    }
+
+
+    private async Task ScrollToBottom()
+    {
+        if (autoScrollEnabled)
+            await JS.InvokeVoidAsync("scrollToLastLogLine");
+    }
+
+    private ElementReference logContainerRef;
+
+    private bool logPopupVisible = false;
+    private List<string> liveLogs = new();
+    private Timer? logRefreshTimer;
+
+    private long lastSeenLogSequence = 0;
+    private long currentLogSequence = 0;
+    private bool hasNewLogs => currentLogSequence > lastSeenLogSequence;
+    private Timer? logCheckTimer;
+
+    private void StartLogWatcher()
+    {
+        logCheckTimer = new Timer(_ =>
+        {
+            var seq = proberCacheMonitoringService.CurrentLogSequence;
+            if (seq != currentLogSequence)
+            {
+                currentLogSequence = seq;
+                InvokeAsync(StateHasChanged); // update the red button
+            }
+        }, null, 0, 1000);
+    }
+
+    private void ToggleLogPopup()
+    {
+        logPopupVisible = !logPopupVisible;
+
+        if (logPopupVisible)
+        {
+            
+
+            logRefreshTimer = new Timer(async _ =>
+            {
+                var logs = proberCacheMonitoringService.GetLogHistory();
+                await InvokeAsync(async () =>
+                {
+                    liveLogs = logs;
+                    StateHasChanged();
+                    await ScrollToBottom();
+                    
+                    lastSeenLogSequence = proberCacheMonitoringService.CurrentLogSequence;
+                });
+            }, null, 0, 1000);
+        }
+        else
+        {
+            logRefreshTimer?.Dispose();
+            logRefreshTimer = null;
+        }
+    }
+
+    private bool autoScrollEnabled = true;
+
+    private void ToggleAutoScroll()
+    {
+        autoScrollEnabled = !autoScrollEnabled;
     }
 }

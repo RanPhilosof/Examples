@@ -1,7 +1,8 @@
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using StateOfTheArtTablePubMonitor.Data;
+using Prober.Consumer.Service;
+using RP.Infra;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<ProberCacheMonitoringService>();
+builder.Services.AddSingleton<IServicesInfo>(new ServicesInfo());
 builder.Services.AddBlazoredLocalStorage();
+
+builder.Host.ConfigureLogging(logging =>
+     {
+         logging.ClearProviders();
+         logging.AddConsole(); // Logs to console
+         logging.SetMinimumLevel(LogLevel.Information); // Optional
+     });
 
 var app = builder.Build();
 
