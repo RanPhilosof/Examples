@@ -12,11 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Infra\RP.Infra\RP.Infra.csproj" />
+    <ProjectReference Include="..\..\Prober\RP.Prober.Razor.Component\RP.Prober.Razor.Component.csproj" />
     <ProjectReference Include="..\..\Prober\RP.Prober\RP.Prober.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Data\" />
   </ItemGroup>
 
 </Project>
