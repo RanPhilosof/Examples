@@ -11,18 +11,17 @@
     function removeModalBackdrop() {
         setTimeout(() => {
             document.querySelectorAll('.modal-backdrop').forEach(e => e.remove());
-        }, 100); // Wait 100ms to ensure it's rendered
+        }, 100);
     }
 </script>
 
-@* <button class="btn btn-secondary mb-2" @onclick="ToggleLogPopup">Show Console Logs</button> *@
 <button class="btn mb-2 @(hasNewLogs ? "btn-danger" : "btn-secondary")" @onclick="ToggleLogPopup">
     Show Console Logs
 </button>
 
 @if (logPopupVisible)
 {
-        <script>
+    <script>
         setTimeout(() => {
             const modalContent = document.querySelector('.modal-content');
             const backdrop = document.querySelector('.modal-backdrop');
@@ -38,27 +37,16 @@
         }, 100); // Wait a bit for DOM to be ready
     </script>
 
-    @* <div class="modal-backdrop fade show"></div> *@
-    
-    
-    
-    @* <div class="modal d-block draggable-modal" tabindex="-1" @ref="draggableModalRef"> *@
+    <div class="modal d-block draggable-modal" tabindex="-1" @ref="draggableModalRef">
 
 
 
-        @* <div class="draggable-modal custom-modal" tabindex="-1" @ref="draggableModalRef"> *@
-            <div class="modal d-block draggable-modal" tabindex="-1" @ref="draggableModalRef">
-
-
-
-        @* <div class="modal-dialog modal-lg"> *@
-            <div class="modal-dialog">
+        <div class="modal-dialog">
             <div class="modal-content resizable-box">
                 <div class="modal-header">
                     <h5 class="modal-title">Console Logs (Live)</h5>
                     <button type="button" class="btn-close" @onclick="ToggleLogPopup"></button>
                 </div>
-                @* <div class="modal-body" style="max-height: 400px; overflow-y: auto;" data-log-container> *@
                 <div class="modal-body" style="overflow-y: auto; flex-grow: 1;" data-log-container>
                     <div style="min-height: 400px;">
                         @if (!liveLogs.Any())
@@ -67,12 +55,23 @@
                         }
                         else
                         {
-                            @foreach (var line in liveLogs.Select((text, i) => new { text, i }))
-                            {
-                                <div class="log-line" onclick="selectText(this)">
-                                    <code id="log-line-@line.i">@line.text</code>
-                                </div>
-                            }
+                            <table class="table table-sm table-striped" style="font-family: monospace;">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Log</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var line in liveLogs.Select((text, i) => new { text, i }))
+                                    {
+                                        <tr class="log-line" onclick="selectText(this, event)">
+                                            <td>@line.i</td>
+                                            <td><code id="log-line-@line.i">@line.text</code></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         }
                     </div>
                 </div>
@@ -83,131 +82,118 @@
                     <button class="btn btn-secondary" @onclick="ToggleLogPopup">Close</button>
                 </div>
             </div>
-            @* <div class="resizer"></div>  *@@* Draggable resizer *@
         </div>
     </div>
 }
+
 <script>
-    function selectText(element) {
-        if (window.getSelection) {
-            const selection = window.getSelection();
-            const range = document.createRange();
-            range.selectNodeContents(element);
-            selection.removeAllRanges();
-            selection.addRange(range);
+    let lastSelectedRow = null;
+
+    function selectText(row, event) {
+        const allRows = Array.from(document.querySelectorAll('.log-line'));
+
+        if (event.shiftKey && lastSelectedRow) {
+            const startIndex = allRows.indexOf(lastSelectedRow);
+            const endIndex = allRows.indexOf(row);
+            const [start, end] = startIndex < endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
+
+            allRows.forEach(r => r.classList.remove('highlighted'));
+
+            for (let i = start; i <= end; i++) {
+                allRows[i].classList.add('highlighted');
+            }
+        } else {
+            allRows.forEach(r => r.classList.remove('highlighted'));
+            row.classList.add('highlighted');
         }
+
+        lastSelectedRow = row;
     }
+
+    // Prevent default text selection
+    document.addEventListener('mousedown', function (e) {
+        if (e.target.closest('.log-line')) {
+            e.preventDefault();
+        }
+    });
+
+    // Handle Ctrl+C
+    document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey && e.key === 'c') {
+            const selectedRows = document.querySelectorAll('.log-line.highlighted code');
+            if (selectedRows.length > 0) {
+                const text = Array.from(selectedRows).map(el => el.textContent).join('\n');
+                navigator.clipboard.writeText(text).then(() => {
+                    console.log('Copied to clipboard');
+                }).catch(err => {
+                    console.error('Clipboard write failed:', err);
+                });
+
+                e.preventDefault(); // Prevent browser default
+            }
+        }
+    });
 </script>
 
+@* <script>
+    let lastSelectedRow = null;
+
+    function selectText(row, event) {
+        const allRows = Array.from(document.querySelectorAll('.log-line'));
+
+        if (event.shiftKey && lastSelectedRow) {
+            // Shift+click: Highlight a range
+            const startIndex = allRows.indexOf(lastSelectedRow);
+            const endIndex = allRows.indexOf(row);
+            const [start, end] = startIndex < endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
+
+            // Clear previous highlights
+            allRows.forEach(r => r.classList.remove('highlighted'));
+
+            // Highlight selected range
+            for (let i = start; i <= end; i++) {
+                allRows[i].classList.add('highlighted');
+            }
+        } else {
+            // Single click: highlight only this row
+            allRows.forEach(r => r.classList.remove('highlighted'));
+            row.classList.add('highlighted');
+        }
+
+        lastSelectedRow = row;
+    }
+</script> *@
+
 @* <style>
-    .log-line {
+    .log-line td {
+        user-select: none;
         cursor: pointer;
-        user-select: all;
-        padding: 2px 4px;
+        transition: background-color 0.2s ease;
+    }
+
+    .log-line.highlighted td {
+        background-color: #f0f8ff !important;
+        border-left: 4px solid #007bff;
     }
 </style> *@
 
-
-
-@* <style>
-    .modal.d-block {
-        position: fixed;
-        top: 50px;
-        left: 50px;
-        z-index: 1050;
-        background-color: rgba(0, 0, 0, 0.5);
-        pointer-events: none; /* prevent backdrop resize */
-    }
-
-    .modal-dialog {
-        margin: 0;
-        pointer-events: auto;
-        position: absolute;
-    }
-
-    .resizable-box {
-        resize: both;
-        overflow: auto;
-        min-width: 300px;
-        min-height: 200px;
-        max-width: 95vw;
-        max-height: 90vh;
-        position: relative;
-    }
-
-    .log-line {
-        cursor: pointer;
-        user-select: all;
-        padding: 2px 4px;
-    }
-</style> *@
-
-@* 
 <style>
-    .resizable-box {
-        resize: both;
-        overflow: auto;
-        min-width: 300px;
-        min-height: 200px;
-        max-width: 95vw;
-        max-height: 90vh;
-        position: relative;
-    }
-
-    .modal.d-block {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+    .log-line td code {
+        display: block;
+        white-space: pre-wrap;
         overflow: hidden;
-        z-index: 1050;
-        background-color: rgba(0, 0, 0, 0.5); /* optional: backdrop effect */
+        max-height: 2.8em; /* ~2 lines depending on line height */
+        line-height: 1.4em;
+        text-overflow: ellipsis;
     }
 
-    .log-line {
-        cursor: pointer;
-        user-select: all;
-        padding: 2px 4px;
+    .log-line.highlighted td code {
+        background-color: #f0f8ff !important;
+        border-left: 4px solid #007bff;
+        max-height: none; /* ← This is the key part */
+        overflow: visible; /* Optional: fully show content */
     }
-</style> *@
-
-@* <style>
-    .resizable-box {
-        position: relative;
-        resize: both;
-        overflow: auto;
-        min-width: 300px;
-        min-height: 200px;
-        max-width: 95vw;
-        max-height: 90vh;
-    }
-
-    .resizer {
-        position: absolute;
-        width: 16px;
-        height: 16px;
-        bottom: 0;
-        right: 0;
-        cursor: se-resize;
-        background: transparent;
-        z-index: 10;
-    }
-
-    .modal.d-block {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        z-index: 1050;
-    }
-
-    .modal-open {
-        overflow: hidden;
-    }
-</style> *@
+</style>
 
 <h4>Favorites</h4>
 
@@ -247,7 +233,6 @@
 }
 
 <input class="form-control mb-2" value="@pendingFilterText" @oninput="OnNameFilterChanged" placeholder="Filter by name..." />
-@* <input class="form-control mb-2" @bind="nameFilter" placeholder="Filter by name..." /> *@
 
 <div class="mb-2">
     <input type="checkbox" class="form-check-input me-1" @bind="showOnlySelected" id="showSelectedToggle" />
@@ -301,58 +286,52 @@ else
     </button>
 
     <style>
-    .tabs {
-        display: flex;
-        border-bottom: 2px solid #ccc;
-        margin-bottom: 1rem;
-        cursor: pointer;
-    }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ccc;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
 
-    .tab {
-        padding: 0.5rem 1rem;
-        border: 1px solid #ccc;
-        border-bottom: none;
-        background-color: #f1f1f1;
-        margin-right: 4px;
-    }
+        .tab {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            background-color: #f1f1f1;
+            margin-right: 4px;
+        }
 
-    .tab.active {
-        background-color: white;
-        font-weight: bold;
-        border-top: 2px solid #007bff;
-        border-left: 1px solid #ccc;
-        border-right: 1px solid #ccc;
-    }
+            .tab.active {
+                background-color: white;
+                font-weight: bold;
+                border-top: 2px solid #007bff;
+                border-left: 1px solid #ccc;
+                border-right: 1px solid #ccc;
+            }
 
-    .tab-content {
-        display: none;
-    }
+        .tab-content {
+            display: none;
+        }
 
-    .tab-content.active {
-        display: block;
-    }
+            .tab-content.active {
+                display: block;
+            }
 
-    .my-custom-table th,
-    .my-custom-table td {
-        border: 1px solid #ccc;
-        padding: 0.5rem 1rem;
-        text-align: left !important;
-        white-space: nowrap;
-        vertical-align: middle;
-    }
+        .my-custom-table th,
+        .my-custom-table td {
+            border: 1px solid #ccc;
+            padding: 0.5rem 1rem;
+            text-align: left !important;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
 
-    .my-custom-table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-</style>
+        .my-custom-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+    </style>
 
-@* <div class="tabs" id="tab-buttons">
-    @for (int i = 0; i < tablesData.Count; i++)
-    {
-            <div class="tab @(i == 0 ? "active" : "")" onclick="showTab(@i)">@tablesData[i].TableInfo.Name</div>
-    }
-</div> *@
     <div class="tabs" id="tab-buttons">
         @for (int i = 0; i < groupedTables.Count; i++)
         {
@@ -369,11 +348,11 @@ else
         var groupIndex = group.Key;
         var tables = group.Value;
 
-        <div class="tab-content @(i == 0 ? "active" : "")" id="tab-content-@i">            
+        <div class="tab-content @(i == 0 ? "active" : "")" id="tab-content-@i">
 
             @foreach (var table in tables)
             {
-                <div class="table-container mb-4">                    
+                <div class="table-container mb-4">
                     <p>@table.TableInfo.Name (<strong>Guid:</strong> @table.TableInfo.Guid)</p>
 
                     <table class="my-custom-table">
@@ -402,18 +381,18 @@ else
         </div>
     }
 
-<script>
-    function showTab(index) {
-        const tabs = document.querySelectorAll('.tab');
-        const contents = document.querySelectorAll('.tab-content');
+    <script>
+        function showTab(index) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
 
-        tabs.forEach(tab => tab.classList.remove('active'));
-        contents.forEach(content => content.classList.remove('active'));
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
 
-        tabs[index].classList.add('active');
-        contents[index].classList.add('active');
-    }
-</script>
+            tabs[index].classList.add('active');
+            contents[index].classList.add('active');
+        }
+    </script>
     <script>
         function scrollToLastLogLine() {
             const container = document.querySelector('[data-log-container]');
@@ -479,11 +458,10 @@ else
             background-color: transparent;
             pointer-events: none;
             z-index: 1050;
-            
         }
 
         .modal-dialog {
-             margin: 0;
+            margin: 0;
             pointer-events: auto;
             position: static;
             width: auto;
@@ -501,7 +479,7 @@ else
             z-index: 1050;
         }
 
-         .resizable-box {
+        .resizable-box {
             display: flex;
             flex-direction: column;
             resize: both;
@@ -515,49 +493,10 @@ else
 
     </style>
 
-@*     <style>
-        .draggable-modal {
-            position: absolute;
-            top: 100px;
-            left: 100px;
-            resize: both;
-            overflow: auto;
-            max-width: 95%;
-            max-height: 95%;
-            min-width: 300px;
-            min-height: 200px;
-            z-index: 1050;
-        }
-
-            .draggable-modal .modal-dialog {
-                margin: 0;
-                pointer-events: auto;
-            }
-
-            .draggable-modal .modal-header {
-                cursor: move;
-                user-select: none;
-            }
-    </style> *@
-
     <style>
         body.modal-open {
             overflow: hidden !important;
         }
-
-@*         .modal.d-block {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 1050;
-        } *@
-
-   @*      .modal-dialog {
-            margin: 2rem auto;
-        } *@
     </style>
 
     <style>
@@ -575,28 +514,6 @@ else
             background-color: white;
             box-shadow: 0 0 10px rgba(0,0,0,0.3);
         }
-
-@*         .modal-dialog {
-            margin: 0;
-            pointer-events: auto; 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: auto;
-        } *@
-
-@*         .resizable-box {
-            display: flex;
-            flex-direction: column;
-            resize: both;
-            overflow: auto;
-            min-width: 300px;
-            min-height: 200px;
-            max-width: 95vw;
-            max-height: 90vh;
-            position: relative;
-            background-color: white;
-        } *@
 
         .modal-header, .modal-footer {
             cursor: move; /* Allow drag behavior */
@@ -667,7 +584,7 @@ else
             }
 
             timer = new Timer(new TimerCallback((o) => UpdateTablesData()), null, 1000, 1000);
-            
+
             StartLogWatcher();
         }
     }
@@ -681,7 +598,7 @@ else
 
     private async void UpdateTablesData()
     {
-        if (isPaused) 
+        if (isPaused)
             return;
 
         var local_tablesData = new List<Table>();
@@ -880,7 +797,7 @@ else
                     liveLogs = logs;
                     StateHasChanged();
                     await ScrollToBottom();
-                    
+
                     lastSeenLogSequence = proberCacheMonitoringService.CurrentLogSequence;
                 });
             }, null, 0, 1000);
