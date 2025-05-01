@@ -22,25 +22,84 @@
 @if (logPopupVisible)
 {
     <script>
-        setTimeout(() => {
-            const modalContent = document.querySelector('.modal-content');
-            const backdrop = document.querySelector('.modal-backdrop');
-            if (modalContent && backdrop) {
-                modalContent.addEventListener('mousedown', function () {
-                    backdrop.style.display = 'none';
-                });
+        let selectedLogIds = new Set(); // Store globally selected log IDs
+        let lastSelectedId = null;
 
-                modalContent.addEventListener('mouseup', function () {
-                    backdrop.style.display = 'block';
-                });
+        function selectText(row, event) {
+            const id = row.getAttribute('data-log-id');
+            const allRows = Array.from(document.querySelectorAll('.log-line'));
+
+            if (event.shiftKey && lastSelectedId) {
+                const rows = allRows.map(r => ({
+                    id: r.getAttribute('data-log-id'),
+                    el: r
+                }));
+
+                const startIndex = rows.findIndex(r => r.id === lastSelectedId);
+                const endIndex = rows.findIndex(r => r.id === id);
+                const [start, end] = startIndex < endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
+
+                selectedLogIds.clear();
+                for (let i = start; i <= end; i++) {
+                    rows[i].el.classList.add('highlighted');
+                    selectedLogIds.add(rows[i].id);
+                }
+            } else {
+                if (selectedLogIds.has(id)) {
+                    selectedLogIds.delete(id);
+                    row.classList.remove('highlighted');
+                } else {
+                    selectedLogIds.clear();
+                    allRows.forEach(r => r.classList.remove('highlighted'));
+                    row.classList.add('highlighted');
+                    selectedLogIds.add(id);
+                }
             }
-        }, 100); // Wait a bit for DOM to be ready
+
+            lastSelectedId = id;
+        }
+
+        function resetHighlights() {
+            const allRows = document.querySelectorAll('.log-line');
+            allRows.forEach(row => {
+                const id = row.getAttribute('data-log-id');
+                if (selectedLogIds.has(id)) {
+                    row.classList.add('highlighted');
+                } else {
+                    row.classList.remove('highlighted');
+                }
+            });
+        }
+
+        document.addEventListener('mousedown', function (e) {
+            if (e.target.closest('.log-line')) {
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'c') {
+                const selectedRows = document.querySelectorAll('.log-line.highlighted code');
+                if (selectedRows.length > 0) {
+                    const text = Array.from(selectedRows).map(el => el.textContent).join('\n');
+                    navigator.clipboard.writeText(text).catch(console.error);
+                    e.preventDefault();
+                }
+            }
+
+            if (e.ctrlKey && e.key === 'a') {
+                const allRows = document.querySelectorAll('.log-line');
+                allRows.forEach(row => {
+                    const id = row.getAttribute('data-log-id');
+                    row.classList.add('highlighted');
+                    selectedLogIds.add(id);
+                });
+                e.preventDefault();
+            }
+        });
     </script>
 
     <div class="modal d-block draggable-modal" tabindex="-1" @ref="draggableModalRef">
-
-
-
         <div class="modal-dialog">
             <div class="modal-content resizable-box">
                 <div class="modal-header">
@@ -65,9 +124,10 @@
                                 <tbody>
                                     @foreach (var line in liveLogs.Select((text, i) => new { text, i }))
                                     {
-                                        <tr class="log-line" onclick="selectText(this, event)">
-                                            <td>@line.i</td>
-                                            <td><code id="log-line-@line.i">@line.text</code></td>
+                                        <tr class="log-line" data-log-id="@line.text.Item1" onclick="selectText(this, event)">
+
+                                            <td>@(@line.text.Item1)</td>  <!-- Global Line Count -->
+                                            <td><code id="log-line-@line.i">@line.text.Item2</code></td>
                                         </tr>
                                     }
                                 </tbody>
@@ -86,97 +146,6 @@
     </div>
 }
 
-<script>
-    let lastSelectedRow = null;
-
-    function selectText(row, event) {
-        const allRows = Array.from(document.querySelectorAll('.log-line'));
-
-        if (event.shiftKey && lastSelectedRow) {
-            const startIndex = allRows.indexOf(lastSelectedRow);
-            const endIndex = allRows.indexOf(row);
-            const [start, end] = startIndex < endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
-
-            allRows.forEach(r => r.classList.remove('highlighted'));
-
-            for (let i = start; i <= end; i++) {
-                allRows[i].classList.add('highlighted');
-            }
-        } else {
-            allRows.forEach(r => r.classList.remove('highlighted'));
-            row.classList.add('highlighted');
-        }
-
-        lastSelectedRow = row;
-    }
-
-    // Prevent default text selection
-    document.addEventListener('mousedown', function (e) {
-        if (e.target.closest('.log-line')) {
-            e.preventDefault();
-        }
-    });
-
-    // Handle Ctrl+C
-    document.addEventListener('keydown', function (e) {
-        if (e.ctrlKey && e.key === 'c') {
-            const selectedRows = document.querySelectorAll('.log-line.highlighted code');
-            if (selectedRows.length > 0) {
-                const text = Array.from(selectedRows).map(el => el.textContent).join('\n');
-                navigator.clipboard.writeText(text).then(() => {
-                    console.log('Copied to clipboard');
-                }).catch(err => {
-                    console.error('Clipboard write failed:', err);
-                });
-
-                e.preventDefault(); // Prevent browser default
-            }
-        }
-    });
-</script>
-
-@* <script>
-    let lastSelectedRow = null;
-
-    function selectText(row, event) {
-        const allRows = Array.from(document.querySelectorAll('.log-line'));
-
-        if (event.shiftKey && lastSelectedRow) {
-            // Shift+click: Highlight a range
-            const startIndex = allRows.indexOf(lastSelectedRow);
-            const endIndex = allRows.indexOf(row);
-            const [start, end] = startIndex < endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
-
-            // Clear previous highlights
-            allRows.forEach(r => r.classList.remove('highlighted'));
-
-            // Highlight selected range
-            for (let i = start; i <= end; i++) {
-                allRows[i].classList.add('highlighted');
-            }
-        } else {
-            // Single click: highlight only this row
-            allRows.forEach(r => r.classList.remove('highlighted'));
-            row.classList.add('highlighted');
-        }
-
-        lastSelectedRow = row;
-    }
-</script> *@
-
-@* <style>
-    .log-line td {
-        user-select: none;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-    }
-
-    .log-line.highlighted td {
-        background-color: #f0f8ff !important;
-        border-left: 4px solid #007bff;
-    }
-</style> *@
-
 <style>
     .log-line td code {
         display: block;
@@ -190,8 +159,8 @@
     .log-line.highlighted td code {
         background-color: #f0f8ff !important;
         border-left: 4px solid #007bff;
-        max-height: none; /* ← This is the key part */
-        overflow: visible; /* Optional: fully show content */
+        max-height: none; /* Show full content when highlighted */
+        overflow: visible; /* Ensure full text is visible when highlighted */
     }
 </style>
 
@@ -531,6 +500,7 @@ else
 }
 
 @code {
+    // int globalLineCount = 0;
     int tabIndex = 0;
     private bool initialized = false;
 
@@ -757,7 +727,7 @@ else
     private ElementReference logContainerRef;
 
     private bool logPopupVisible = false;
-    private List<string> liveLogs = new();
+    private List<Tuple<long, string>> liveLogs = new();
     private Timer? logRefreshTimer;
 
     private long lastSeenLogSequence = 0;
@@ -795,6 +765,7 @@ else
                 await InvokeAsync(async () =>
                 {
                     liveLogs = logs;
+                    await JS.InvokeVoidAsync("resetHighlights");
                     StateHasChanged();
                     await ScrollToBottom();
 
