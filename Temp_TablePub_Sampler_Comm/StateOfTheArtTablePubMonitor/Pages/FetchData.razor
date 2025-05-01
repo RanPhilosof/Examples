@@ -100,7 +100,7 @@
     </script>
 
     <div class="modal d-block draggable-modal" tabindex="-1" @ref="draggableModalRef">
-        <div class="modal-dialog">
+        <div class="modal-dialog" style="width: 70vw; max-width: none;">
             <div class="modal-content resizable-box">
                 <div class="modal-header">
                     <h5 class="modal-title">Console Logs (Live)</h5>
@@ -114,10 +114,10 @@
                         }
                         else
                         {
-                            <table class="table table-sm table-striped" style="font-family: monospace;">
+                            <table class="table table-sm table-striped log-table" style="font-family: monospace;">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
+                                        <th style="width: 60px;">#</th>
                                         <th>Log</th>
                                     </tr>
                                 </thead>
@@ -146,7 +146,75 @@
     </div>
 }
 
-<style>
+ <style>
+    .log-line td code {
+        display: block;
+        white-space: pre-wrap;
+        overflow: hidden;
+        max-height: 2.8em;
+        line-height: 1.4em;
+        text-overflow: ellipsis;
+    }
+
+    .log-line.highlighted td code {
+        background-color: #f0f8ff !important;
+        border-left: 4px solid #007bff;
+        max-height: none;
+        overflow: visible;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        table thead th {
+            position: sticky;
+            top: 0;
+            background-color: white; /* ensures header is opaque */
+            z-index: 2;
+            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+            padding: 8px 12px;
+        }
+
+        table tbody tr:first-child td {
+            padding-top: 2.5em; /* push first log row below sticky header */
+        }
+
+    .modal-content {
+        display: flex;
+        flex-direction: column;
+        height: 80vh;
+    }
+
+    .modal-body[data-log-container] {
+        flex-grow: 1;
+        overflow: hidden;
+        padding: 0;
+    }
+
+    .log-table-container {
+        height: 100%;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    table.log-table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        table.log-table thead th {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 10;
+            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+            padding: 8px 12px;
+        }
+</style> 
+
+@* <style>
     .log-line td code {
         display: block;
         white-space: pre-wrap;
@@ -162,7 +230,7 @@
         max-height: none; /* Show full content when highlighted */
         overflow: visible; /* Ensure full text is visible when highlighted */
     }
-</style>
+</style> *@
 
 <h4>Favorites</h4>
 
@@ -433,7 +501,6 @@ else
             margin: 0;
             pointer-events: auto;
             position: static;
-            width: auto;
         }
 
         .draggable-modal {
@@ -728,7 +795,7 @@ else
 
     private bool logPopupVisible = false;
     private List<Tuple<long, string>> liveLogs = new();
-    private Timer? logRefreshTimer;
+    //private Timer? logRefreshTimer;
 
     private long lastSeenLogSequence = 0;
     private long currentLogSequence = 0;
@@ -748,36 +815,57 @@ else
         }, null, 0, 1000);
     }
 
-    private async void ToggleLogPopup()
+    private async Task ToggleLogPopup()
     {
         logPopupVisible = !logPopupVisible;
 
         if (logPopupVisible)
         {
-            await JS.InvokeVoidAsync("document.body.classList.add", "modal-open");
-            await Task.Delay(100);
-            await JS.InvokeVoidAsync("removeModalBackdrop");
-
-
-            logRefreshTimer = new Timer(async _ =>
-            {
-                var logs = proberCacheMonitoringService.GetLogHistory();
-                await InvokeAsync(async () =>
-                {
-                    liveLogs = logs;
-                    await JS.InvokeVoidAsync("resetHighlights");
-                    StateHasChanged();
-                    await ScrollToBottom();
-
-                    lastSeenLogSequence = proberCacheMonitoringService.CurrentLogSequence;
-                });
-            }, null, 0, 1000);
+            // Start capturing new logs
+            liveLogs.Clear(); // Clear anything from previous sessions
+            await FetchAndAppendLogsPeriodically();
         }
-        else
+    }
+
+    private async Task FetchAndAppendLogsPeriodically()
+    {
+        while (logPopupVisible)
         {
-            await JS.InvokeVoidAsync("document.body.classList.remove", "modal-open");
-            logRefreshTimer?.Dispose();
-            logRefreshTimer = null;
+            //await JS.InvokeVoidAsync("document.body.classList.add", "modal-open");
+            //await Task.Delay(100);
+            //await JS.InvokeVoidAsync("removeModalBackdrop");
+
+
+            //logRefreshTimer = new Timer(async _ =>
+            //{
+            var logs = proberCacheMonitoringService.GetLogHistoryAndClear();
+            if (logs.Any())
+            {
+                liveLogs.AddRange(logs);
+                StateHasChanged();
+                await ScrollToBottom();
+                lastSeenLogSequence = proberCacheMonitoringService.CurrentLogSequence;
+            }
+
+            //await InvokeAsync(async () =>
+            //{
+            //    liveLogs = logs;
+            //    await JS.InvokeVoidAsync("resetHighlights");
+            //    StateHasChanged();
+            //    await ScrollToBottom();
+            //
+            //    lastSeenLogSequence = proberCacheMonitoringService.CurrentLogSequence;
+            //});
+            //}, null, 0, 1000);
+
+            await Task.Delay(1000); // adjust based on your need
+                                    //}
+                                    //else
+                                    //{
+                                    //    await JS.InvokeVoidAsync("document.body.classList.remove", "modal-open");
+                                    //    logRefreshTimer?.Dispose();
+                                    //    logRefreshTimer = null;
+                                    //}
         }
     }
 
