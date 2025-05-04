@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StateOfTheArtTablePubMonito
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestTestApp", "RestTestApp\RestTestApp.csproj", "{D533C4DA-13B5-4BEC-AD08-40A850DEC62B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.Tcp.Communication.ServerClient", "..\ServerClientCommunication\Tcp.Communication.ServerClient\RP.Tcp.Communication.ServerClient.csproj", "{EE5A2740-C87E-4754-8CF3-12150C9DE866}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.Tcp.Communication.ServerClient", "..\ServerClientCommunication\RP.Tcp.Communication.ServerClient\RP.Tcp.Communication.ServerClient.csproj", "{EE5A2740-C87E-4754-8CF3-12150C9DE866}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.Infra", "..\Infra\RP.Infra\RP.Infra.csproj", "{FD489671-BA41-46C5-9339-14C6771CFE71}"
 EndProject
