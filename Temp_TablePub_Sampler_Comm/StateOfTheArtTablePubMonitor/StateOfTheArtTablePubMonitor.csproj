@@ -8,12 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Infra\RP.Infra\RP.Infra.csproj" />
-    <ProjectReference Include="..\..\Prober\RP.Prober.Razor.Component\RP.Prober.Razor.Component.csproj" />
-    <ProjectReference Include="..\..\Prober\RP.Prober\RP.Prober.csproj" />
+    <PackageReference Include="RP.Infra" Version="1.0.0" />
+    <PackageReference Include="RP.Prober" Version="1.0.0" />
+    <PackageReference Include="RP.Prober.Razor.Component" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

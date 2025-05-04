@@ -8,11 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.18" />
+    <PackageReference Include="RP.Prober" Version="1.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Prober\RP.Prober\RP.Prober.csproj" />
     <ProjectReference Include="..\..\TablePublisher\RP.TablePublisher\RP.TablePublisher.csproj" />
     <ProjectReference Include="..\..\TablePublisher\UnitTests\RP.TablePublisher.XUnitTests\RP.TablePublisher.XUnitTests.csproj" />
   </ItemGroup>
