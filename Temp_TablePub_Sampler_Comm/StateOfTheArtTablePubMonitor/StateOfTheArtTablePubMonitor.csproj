@@ -14,8 +14,8 @@
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
   	<PackageReference Include="RP.Infra" Version="1.0.2" />
-  	<PackageReference Include="RP.Prober" Version="1.0.5" />
-  	<PackageReference Include="RP.Prober.Razor.Component" Version="1.0.5" />
+  	<PackageReference Include="RP.Prober" Version="1.0.6" />
+  	<PackageReference Include="RP.Prober.Razor.Component" Version="1.0.6" />
   </ItemGroup>
 	
   <ItemGroup>

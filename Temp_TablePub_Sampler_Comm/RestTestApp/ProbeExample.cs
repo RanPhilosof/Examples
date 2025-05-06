@@ -1,5 +1,6 @@
 ﻿using RP.Prober.CyclicCacheProbing;
 using RP.Prober.Singleton;
+using System.Reflection.PortableExecutable;
 
 namespace RestTestApp
 {
@@ -135,6 +136,81 @@ namespace RestTestApp
             var random = new Random();
             int index = random.Next(words.Count);
             return words[index];
+        }
+    }
+    
+    public class MeasurmentsCountersCreator
+    {
+        private CyclicCacheProbing<List<int>> cyclicCacheProbing;
+        private Dictionary<String, int> headerToIndex = new Dictionary<string, int>();
+        private List<string> originalHeader = new List<string>();
+        public MeasurmentsCountersCreator(string name, List<string> header)
+        {
+            if (header == null)
+                header = new List<string>() { "Cpu", "Memory", "Gc", "Pcu" };
+
+            originalHeader = header;
+
+            for (int i=0; i<header.Count; i++)
+                headerToIndex.Add(header[i], i);
+
+            cyclicCacheProbing =
+                new CyclicCacheProbing<List<int>>(1, name, header, HeaderType.Column);
+
+            cyclicCacheProbing.Convert =
+                (measure) =>
+                {
+                    return new List<string>()
+                            {
+                                $"{measure[0]}",
+                                $"{measure[1]}",
+                                $"{measure[2]}",
+                                $"{measure[3]}",
+                            };
+                };
+        }
+
+        public void StartGenerateLines()
+        {
+            Task.Run(
+                () =>
+                {
+                    while (true)
+                    {
+                        Thread.Sleep(100);
+                        GenerateNewLine();
+                    }
+                });
+        }
+
+        private void GenerateNewLine()
+        {
+            var kvp = new Dictionary<string, int>();
+            foreach (var head in headerToIndex)
+            {
+                switch(head.Key)
+                {
+                    case "Cpu":
+                        kvp.Add(head.Key, Random.Shared.Next(0, 100));
+                        break;
+                    case "Memory":
+                        kvp.Add(head.Key, Random.Shared.Next(5000, 8000));
+                        break;
+                    case "Gc":
+                        kvp.Add(head.Key, Random.Shared.Next(20, 50));
+                        break;
+                    case "Pcu":
+                        kvp.Add(head.Key, Random.Shared.Next(20000, 50000));
+                        break;
+                }
+
+            }
+
+            var res = new List<int>();
+            foreach (var v in kvp)
+                res.Add(v.Value);
+
+            cyclicCacheProbing.EnqueueCyclic(res);
         }
     }
 }
