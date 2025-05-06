@@ -7,14 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-    <PackageReference Include="RP.Prober" Version="1.0.2" />
+	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />    
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\TablePublisher\RP.TablePublisher\RP.TablePublisher.csproj" />
     <ProjectReference Include="..\..\TablePublisher\UnitTests\RP.TablePublisher.XUnitTests\RP.TablePublisher.XUnitTests.csproj" />
   </ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<ProjectReference Include="..\..\Prober\RP.Prober\RP.Prober.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<PackageReference Include="RP.Prober" Version="1.0.5" />
+	</ItemGroup>
 
 	<!--<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
