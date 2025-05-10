@@ -1,5 +1,6 @@
 ﻿using RP.Prober.CyclicCacheProbing;
 using RP.Prober.Singleton;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection.PortableExecutable;
 
 namespace RestTestApp
@@ -211,6 +212,61 @@ namespace RestTestApp
                 res.Add(v.Value);
 
             cyclicCacheProbing.EnqueueCyclic(res);
+        }
+    }
+
+    public class MyTable
+    {
+        public List<List<object>> Values = new List<List<object>>();
+        public MyTable()
+        {
+            Values.Add(new List<object>() { "Table1"});
+            Values.Add(new List<object>() { "Values", "Values" });
+            Values.Add(new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90});
+            Values.Add(new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 80, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90 });
+            Values.Add(new List<object>() { "Table2" });
+            Values.Add(new List<object>() { "Values", "Values" });
+            Values.Add(new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 80, 90 });
+            Values.Add(new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90 });
+        }
+    }
+
+    public class TableExampleCreator
+    {
+        private TableCacheProbing<MyTable> tableCacheProbing;
+
+        public TableExampleCreator(string name)
+        {
+            tableCacheProbing = new TableCacheProbing<MyTable>(name);
+
+            tableCacheProbing.Convert =
+                (table) =>
+                {
+                    var res = new List<List<string>>();
+
+                    foreach (var line in table.Values)
+                    {
+                        var l = new List<string>();
+                        foreach (var el in line)
+                            l.Add(el.ToString());
+                        
+                        res.Add(l);
+                    }
+
+                    return res;
+                };
+
+            tableCacheProbing.SetTableData(new MyTable());
         }
     }
 }

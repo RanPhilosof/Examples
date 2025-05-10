@@ -57,6 +57,7 @@ mcc4.StartGenerateLines();
 var mcc5 = new MeasurmentsCountersCreator("Ran5/DotNetCounters", new List<string>() { "Memory", "Cpu", "Pcu", "Gc" });
 mcc5.StartGenerateLines();
 
+var taC = new TableExampleCreator("Table/StaticTableExample");
 
 var tt = new TT();
 Task.Run(() => tt.PubSub_N_Records());
