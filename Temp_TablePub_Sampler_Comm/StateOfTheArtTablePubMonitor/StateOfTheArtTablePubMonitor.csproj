@@ -24,5 +24,9 @@
     <PackageReference Include="RP.Prober" Version="1.0.5" />
     <PackageReference Include="RP.Prober.Razor.Component" Version="1.0.5" />-->
   </ItemGroup>
+	
+  <ItemGroup>
+    <ProjectReference Include="..\..\Logger\RP.Logger.Razor.Component\RP.Logger.Razor.Component.csproj" />
+  </ItemGroup>
 
 </Project>

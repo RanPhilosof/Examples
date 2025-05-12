@@ -23,17 +23,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TablePublisher", "TablePublisher", "{28BFED87-E72D-4D58-99C7-8EC439FC1F24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.TablePublisher", "..\TablePublisher\RP.TablePublisher\RP.TablePublisher.csproj", "{CCF352FE-6BD7-40A3-BAD3-635DFBD4F5E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.TablePublisher", "..\TablePublisher\RP.TablePublisher\RP.TablePublisher.csproj", "{CCF352FE-6BD7-40A3-BAD3-635DFBD4F5E1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{0DCB6267-EBFF-4492-809E-8E06BE054658}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.TablePublisher.XUnitTests", "..\TablePublisher\UnitTests\RP.TablePublisher.XUnitTests\RP.TablePublisher.XUnitTests.csproj", "{73FC5AA3-A9D4-4CCD-ABA6-D8FD2A342DC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.TablePublisher.XUnitTests", "..\TablePublisher\UnitTests\RP.TablePublisher.XUnitTests\RP.TablePublisher.XUnitTests.csproj", "{73FC5AA3-A9D4-4CCD-ABA6-D8FD2A342DC9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prober", "Prober", "{E6CEA578-0F92-40F3-BFF0-FBD8F511AF37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.Prober", "..\Prober\RP.Prober\RP.Prober.csproj", "{07F76BAE-1652-4269-9E49-3CBFE0F4A663}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.Prober", "..\Prober\RP.Prober\RP.Prober.csproj", "{07F76BAE-1652-4269-9E49-3CBFE0F4A663}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RP.Prober.Razor.Component", "..\Prober\RP.Prober.Razor.Component\RP.Prober.Razor.Component.csproj", "{9D6F2359-9D35-4B40-B9D7-160A94BA5F13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.Prober.Razor.Component", "..\Prober\RP.Prober.Razor.Component\RP.Prober.Razor.Component.csproj", "{9D6F2359-9D35-4B40-B9D7-160A94BA5F13}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logger", "Logger", "{1AC06633-63A9-4FDA-9F23-D44B41CA2811}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RP.Logger.Razor.Component", "..\Logger\RP.Logger.Razor.Component\RP.Logger.Razor.Component.csproj", "{C5FCEE7C-D423-4A14-B4D1-8AC2D29ECD6C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +85,10 @@ Global
 		{9D6F2359-9D35-4B40-B9D7-160A94BA5F13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D6F2359-9D35-4B40-B9D7-160A94BA5F13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D6F2359-9D35-4B40-B9D7-160A94BA5F13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5FCEE7C-D423-4A14-B4D1-8AC2D29ECD6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5FCEE7C-D423-4A14-B4D1-8AC2D29ECD6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5FCEE7C-D423-4A14-B4D1-8AC2D29ECD6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5FCEE7C-D423-4A14-B4D1-8AC2D29ECD6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -96,6 +104,7 @@ Global
 		{73FC5AA3-A9D4-4CCD-ABA6-D8FD2A342DC9} = {0DCB6267-EBFF-4492-809E-8E06BE054658}
 		{07F76BAE-1652-4269-9E49-3CBFE0F4A663} = {E6CEA578-0F92-40F3-BFF0-FBD8F511AF37}
 		{9D6F2359-9D35-4B40-B9D7-160A94BA5F13} = {E6CEA578-0F92-40F3-BFF0-FBD8F511AF37}
+		{C5FCEE7C-D423-4A14-B4D1-8AC2D29ECD6C} = {1AC06633-63A9-4FDA-9F23-D44B41CA2811}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {45E81C79-46D0-44D8-B4C1-401AE7FBAA7E}

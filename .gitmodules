@@ -22,3 +22,7 @@
 	path = Prober
 	url = https://github.com/RanPhilosof/Prober
 	branch = main
+[submodule "Logger"]
+	path = Logger
+	url = https://github.com/RanPhilosof/Logger
+	branch = main

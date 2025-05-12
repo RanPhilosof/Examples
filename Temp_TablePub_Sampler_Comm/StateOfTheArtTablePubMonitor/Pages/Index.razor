@@ -1,6 +1,60 @@
 ﻿@page "/"
 @using RP.Prober.Razor.Component
+@using RP.Logger.Razor.Component
 
 <PageTitle>Prober Example</PageTitle>
 
+<LoggerPage GetLoggers="@GetLoggersInfo" SetLoggers="@ApplyLoggersInfo" />
+
 <ProberView/>
+
+@code
+{
+    private List<RP.Logger.Razor.Component.LoggerPage.LoggerItem> loggers = new() {
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran1", Level = LoggerPage.LoggerLevel.None, LoggerName = "Log1"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran2", Level = LoggerPage.LoggerLevel.Info, LoggerName = "Log2"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran3", Level = LoggerPage.LoggerLevel.Debug, LoggerName = "Log3"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran4", Level = LoggerPage.LoggerLevel.Error, LoggerName = "Log4"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran5", Level = LoggerPage.LoggerLevel.Warning, LoggerName = "Log5"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran6", Level = LoggerPage.LoggerLevel.All, LoggerName = "Log6"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran7", Level = LoggerPage.LoggerLevel.Fatal, LoggerName = "Log7"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran8", Level = LoggerPage.LoggerLevel.Warning, LoggerName = "Log5"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran9", Level = LoggerPage.LoggerLevel.All, LoggerName = "Log6"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran10", Level = LoggerPage.LoggerLevel.Fatal, LoggerName = "Log7"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran11", Level = LoggerPage.LoggerLevel.Warning, LoggerName = "Log5"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran12", Level = LoggerPage.LoggerLevel.All, LoggerName = "Log6"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran13", Level = LoggerPage.LoggerLevel.Fatal, LoggerName = "Log7"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran14", Level = LoggerPage.LoggerLevel.Warning, LoggerName = "Log5"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran15", Level = LoggerPage.LoggerLevel.All, LoggerName = "Log6"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran16", Level = LoggerPage.LoggerLevel.Fatal, LoggerName = "Log7"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran17", Level = LoggerPage.LoggerLevel.Warning, LoggerName = "Log5"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran18", Level = LoggerPage.LoggerLevel.All, LoggerName = "Log6"},
+        new LoggerPage.LoggerItem() { ApplicationName = "Ran19", Level = LoggerPage.LoggerLevel.Fatal, LoggerName = "Log7"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan1", Level = LoggerPage.LoggerLevel.None, LoggerName = "Log1"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan2", Level = LoggerPage.LoggerLevel.Info, LoggerName = "Log2"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan3", Level = LoggerPage.LoggerLevel.Debug, LoggerName = "Log3"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan4", Level = LoggerPage.LoggerLevel.Error, LoggerName = "Log4"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan5", Level = LoggerPage.LoggerLevel.Warning, LoggerName = "Log5"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan6", Level = LoggerPage.LoggerLevel.All, LoggerName = "Log6"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan7", Level = LoggerPage.LoggerLevel.Fatal, LoggerName = "Log7"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan8", Level = LoggerPage.LoggerLevel.Warning, LoggerName = "Log5"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan9", Level = LoggerPage.LoggerLevel.All, LoggerName = "Log6"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan10", Level = LoggerPage.LoggerLevel.Fatal, LoggerName = "Log7"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan11", Level = LoggerPage.LoggerLevel.Warning, LoggerName = "Log5"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan12", Level = LoggerPage.LoggerLevel.All, LoggerName = "Log6"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan13", Level = LoggerPage.LoggerLevel.Fatal, LoggerName = "Log7"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan14", Level = LoggerPage.LoggerLevel.Warning, LoggerName = "Log5"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan15", Level = LoggerPage.LoggerLevel.All, LoggerName = "Log6"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan16", Level = LoggerPage.LoggerLevel.Fatal, LoggerName = "Log7"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan17", Level = LoggerPage.LoggerLevel.Warning, LoggerName = "Log5"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan18", Level = LoggerPage.LoggerLevel.All, LoggerName = "Log6"},
+        new LoggerPage.LoggerItem() { ApplicationName = "RRan19", Level = LoggerPage.LoggerLevel.Fatal, LoggerName = "Log7"},
+    };
+    
+    private List<RP.Logger.Razor.Component.LoggerPage.LoggerItem> GetLoggersInfo() => loggers;
+
+    private void ApplyLoggersInfo(List<RP.Logger.Razor.Component.LoggerPage.LoggerItem> updated)
+    {
+        loggers = updated;
+    }
+}
