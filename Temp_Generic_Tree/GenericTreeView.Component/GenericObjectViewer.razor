@@ -175,6 +175,7 @@
 @code {
     [Inject] public IBlazorDownloadFileService BlazorDownloadFileService { get; set; }
     [Parameter] public EventCallback<List<T>> OnApplyClicked { get; set; }
+    [Parameter] public Func<T> InstanceCreator { get; set; }
 
     private MudFileUpload<IBrowserFile> fileUpload;
 
@@ -277,7 +278,10 @@
     private void AddItemHere()
     {
         var localObjectNode = new List<MudBlazorCustomTreeView>();
-        var genericObjectNode = new GenericObjectNode(Activator.CreateInstance(typeof(T)), //fetcherService.GetObjectType()),
+
+        var firstObject = InstanceCreator?.Invoke() ?? Activator.CreateInstance(typeof(T));
+
+        var genericObjectNode = new GenericObjectNode(firstObject, //fetcherService.GetObjectType()),
             (genericObject) =>
                 {
                     return new MudBlazorCustomTreeView() { Value = genericObject };
@@ -382,14 +386,37 @@
 
     private void Insert(GenericObjectNode genericObjectNode)
     {
-        if (genericObjectNode.CanBeAdded)
+        try
         {
-            genericObjectNode.AddItem();
-            
-            // TODO: Check it ??
-            var aggregator = (MudBlazorCustomTreeView)genericObjectNode.GetAggregator();
-            aggregator.HandleOneOf();
+            if (genericObjectNode.CanBeAdded)
+            {
+                genericObjectNode.AddItem();
+
+                // TODO: Check it ??
+                var aggregator = (MudBlazorCustomTreeView)genericObjectNode.GetAggregator();
+                aggregator.HandleOneOf();
+            }
         }
+        catch (Exception ex)
+        {
+            Task.Run(async () => await JsRuntime.InvokeVoidAsync("alert", $"Warning: {GetFullExceptionMessage(ex)} !"));
+        }
+    }
+
+    public static string GetFullExceptionMessage(Exception ex)
+    {
+        if (ex == null) return string.Empty;
+
+        var messages = new List<string>();
+        var currentEx = ex;
+
+        while (currentEx != null)
+        {
+            messages.Add(currentEx.Message);
+            currentEx = currentEx.InnerException;
+        }
+
+        return string.Join(Environment.NewLine, messages);
     }
 
     private void RemoveAt(GenericObjectNode genericObjectNode)

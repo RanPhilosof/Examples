@@ -1,10 +1,13 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Reflection;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
 
@@ -32,6 +35,29 @@ namespace GenericTreeView.SharedTypes
 
         public bool CanBeAdded { get; set; }
 
+        private object CreateTupleInstance(Type type)
+        {
+            object obj = null;
+
+            var genericArgs = type.GetGenericArguments();
+            var constructor = type.GetConstructor(genericArgs);
+
+            var innerObjs = new List<object>();
+            foreach (var arg in genericArgs)
+            {
+                if (arg == typeof(string))
+                    innerObjs.Add(string.Empty);
+                else if (arg.FullName.StartsWith("System.Tuple"))
+                    innerObjs.Add(CreateTupleInstance(arg));
+                else
+                    innerObjs.Add(Activator.CreateInstance(arg));                
+            }
+
+            obj = constructor.Invoke(innerObjs.ToArray());
+
+            return obj;
+        }
+
         public void UpdateValue(Type type)
         {
             if (type != null && type == typeof(string))
@@ -42,7 +68,14 @@ namespace GenericTreeView.SharedTypes
             }
             else
             {
-                PropertyValue = type != null ? Activator.CreateInstance(type) : null;                
+                if (type.FullName.StartsWith("System.Tuple"))
+                {
+                    PropertyValue = CreateTupleInstance(type);
+                }
+                else
+                {
+                    PropertyValue = type != null ? Activator.CreateInstance(type) : null;
+                }
                 //_value = type != null ? Activator.CreateInstance(type) : null;
                 //if (_parent != null && _parent._valueType. _value
                 ParseObjectTree(_name, _nameType, _value, _valueType, _propertyName, _parent);
@@ -55,10 +88,41 @@ namespace GenericTreeView.SharedTypes
             {
                 var addMethods = _valueType.GetMethods().Where(x => x.Name.ToLowerInvariant() == "add").ToList();
                 if (addMethods.Count > 0)
-                    if (_valueType.GetGenericArguments()[0] == typeof(string))
-                        addMethods.First().Invoke(_value, new object[] { string.Empty });
+                {
+                    if (_valueType.GetGenericArguments().Count() > 1)
+                    {
+                        var objects = new List<object>();
+                        for (int i=0; i< _valueType.GetGenericArguments().Count(); i++)
+                        {
+                            object element;
+                            if (_valueType.GetGenericArguments()[i] == typeof(string))
+                                element = string.Empty;
+                            else
+                                element = Activator.CreateInstance(_valueType.GetGenericArguments()[i]);
+
+                            objects.Add(element);
+                        }
+
+                        addMethods.First().Invoke(_value, objects.ToArray());
+                    }
                     else
-                        addMethods.First().Invoke(_value, new object[] { Activator.CreateInstance(_valueType.GetGenericArguments()[0]) });
+                    {
+                        if (_valueType.GetGenericArguments()[0] == typeof(string))
+                            addMethods.First().Invoke(_value, new object[] { string.Empty });
+                        else
+                        {
+                            var genericType = _valueType.GetGenericArguments()[0];
+
+                            if (genericType != null)
+                            {
+                                if (genericType.FullName != null && genericType.FullName.StartsWith("System.Tuple"))
+                                    addMethods.First().Invoke(_value, new object[] { CreateTupleInstance(genericType) });
+                                else
+                                    addMethods.First().Invoke(_value, new object[] { Activator.CreateInstance(genericType) });
+                            }
+                        }
+                    }
+                }
 
                 ParseObjectTree(_name, _nameType, _value, _valueType, _propertyName, _parent);
             }
@@ -69,8 +133,21 @@ namespace GenericTreeView.SharedTypes
             if (_parent != null && _parent._valueType != null && _parent._value != null && CanBeRemoved)
             {
                 var removeAtMethod = _parent._valueType.GetMethod("RemoveAt");
-                var index = int.Parse(_name.Replace("[", "").Replace("]", ""));
-                removeAtMethod.Invoke(_parent._value, new object[] { index });
+                if (removeAtMethod != null)
+                {
+                    var index = int.Parse(_name.Replace("[", "").Replace("]", ""));
+                    removeAtMethod.Invoke(_parent._value, new object[] { index });
+                }
+                else 
+                {
+                    var removeMethod = typeof(IDictionary).GetMethod("Remove", new[] { typeof(object) });
+                    if (removeMethod != null)
+                    {
+                        var propertyInfo = _valueType.GetProperty("Key", BindingFlags.Public | BindingFlags.Instance);
+                        var key = propertyInfo.GetValue(_value);
+                        removeMethod.Invoke(_parent._value, new object[] { key });
+                    }
+                }
 
                 _parent.ParseObjectTree(_parent._name, _parent._nameType, _parent._value, _parent._valueType, _parent._propertyName, _parent._parent);
             }
@@ -160,7 +237,15 @@ namespace GenericTreeView.SharedTypes
             }
             set
             {
-                PropertyValue = value;
+                var currentVal = PropertyValue;
+                try
+                {
+                    PropertyValue = value;
+                }
+                catch
+                {
+                    PropertyValue = currentVal;
+                }
             }
         }
 
@@ -189,8 +274,92 @@ namespace GenericTreeView.SharedTypes
                 return _value;
             }
             set
-            {
-                if (_parent != null && _parent._value is IList)
+            {                     
+                if (_parent != null && _parent._value is ITuple)
+                {
+                    var genericArgs = _parent._valueType.GetGenericArguments();
+                    var constructor = _parent._valueType.GetConstructor(genericArgs);
+                    
+                    var values = _parent._valueType
+                        .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                        .Where(p => p.Name.StartsWith("Item"))
+                        .OrderBy(p => p.Name) // Ensure Item1, Item2, ...
+                        .Select(p => p.GetValue(_parent._value))
+                        .ToArray();
+
+                    var rep = _name.Replace("Item", "");
+                    var index = int.Parse(rep) - 1;
+
+                    if (value is string stringValue)
+                        values[index] = GetValueByTypeWithCorrectType(stringValue, _valueType != null ? _valueType : _nameType);
+                    else
+                        values[index] = value;
+
+                    var val = constructor.Invoke(values);
+                    var indexInParentParent = _parent._parent.PropertyChildren.IndexOf(_parent);
+                    //_parent._parent.PropertyChildren[indexInParentParent] =
+                    //    new GenericObjectNode(
+                    //            _parent._parent.PropertyChildren[indexInParentParent].NameTypeText,
+                    //            _parent._parent.PropertyChildren[indexInParentParent].NameType,
+                    //            val,
+                    //            _parent._parent.PropertyChildren[indexInParentParent]._propertyName,
+                    //            _parent._parent.PropertyChildren[indexInParentParent]._parent,
+                    //            _aggregatorCreator);
+
+                    
+                    //_parent._propertyName.SetValue(_parent._parent._value, val);
+                    _parent.PropertyValue = val;
+                    _parent.ParseObjectTree(_parent._name, _parent._nameType, _parent._value, _parent._valueType, _parent._propertyName, _parent._parent);
+
+                    //_parent._value = val;
+                    //_parent._propertyName.SetValue(_parent._value, val);
+
+                    //_parent._value = constructor.Invoke(values);
+                    //_parent.ParseObjectTree(_parent._name, _parent._nameType, _parent._value, _parent._valueType, _parent._propertyName, _parent._parent);
+                    //_parent._aggregatorCreator?.Invoke(this);
+                }
+                else if (_parent != null && _parent._parent != null && _parent._parent._value is IDictionary iDict)
+                {
+                    if (_name.ToLowerInvariant() == "key")
+                    {
+                        var va = iDict[_value];
+                        iDict.Remove(_value);
+                        if (value is string stringValue)
+                        {
+                            try
+                            {
+                                iDict.Add(GetValueByTypeWithCorrectType(stringValue, _valueType), va);
+                            }
+                            catch
+                            {
+                                iDict.Add(GetValueByTypeWithCorrectType(_value.ToString(), _valueType), va);
+                            }
+                        }
+                        else
+                        {
+                            iDict.Add(value, va);
+                        }
+                    }
+                    else if (_name.ToLowerInvariant() == "value")
+                    {
+                        var key = _parent.PropertyChildren.Where(x => x._name.ToLowerInvariant() == "key").FirstOrDefault();
+                        iDict[key._value] = value;
+                    }
+
+                    _parent._parent.ParseObjectTree(_parent._parent._name, _parent._parent._nameType, _parent._parent._value, _parent._parent._valueType, _parent._parent._propertyName, _parent._parent._parent);
+
+                    //_parent._parent.PropertyChildren[indexInParentParent] =
+                    //    new GenericObjectNode(
+                    //            _parent._parent.PropertyChildren[indexInParentParent].NameTypeText,
+                    //            _parent._parent.PropertyChildren[indexInParentParent].NameType,
+                    //            val,
+                    //            _parent._parent.PropertyChildren[indexInParentParent]._propertyName,
+                    //            _parent._parent.PropertyChildren[indexInParentParent]._parent,
+                    //            _aggregatorCreator);
+
+                    //iDict[]
+                }
+                else if (_parent != null && _parent._value is IList)
                 {
                     var index = int.Parse(_name.Substring(1, _name.Length - 2));
                     var iList = (IList)_parent._value;
@@ -268,6 +437,11 @@ namespace GenericTreeView.SharedTypes
                 case Type t when t == typeof(long):
                     if (long.TryParse(stringValue, out long longValue))
                         return longValue;
+                    break;
+                
+                case Type t when t == typeof(ulong):
+                    if (ulong.TryParse(stringValue, out ulong ulongValue))
+                        return ulongValue;
                     break;
 
                 case Type t when t == typeof(decimal):
@@ -374,15 +548,21 @@ namespace GenericTreeView.SharedTypes
             if (type.IsPrimitive || value is string)
             {
                 IsReadonly = false;
-                if (_parent != null && _parent._valueType != null)
-                {
-                    var removeAtMethod = _parent._valueType.GetMethod("RemoveAt");
-                    if (removeAtMethod != null)
-                    {
-                        CanBeRemoved = true;
-                    }
-                }
             }
+
+            if (_parent != null && _parent._valueType != null)
+            {
+                var removeAtMethod = _parent._valueType.GetMethod("RemoveAt");
+                if (removeAtMethod != null)
+                {
+                    CanBeRemoved = true;
+                }
+                else if (_valueType.IsGenericType && _valueType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+                {
+                    if (_parent._value is IDictionary)
+                        CanBeRemoved = true;
+                }
+            }            
 
             if (type.IsClass && value is IEnumerable enumValue)
             {
@@ -403,7 +583,12 @@ namespace GenericTreeView.SharedTypes
                         i++;
                     }
 
-                    _valueToPresent = $"Count = {((IList)value).Count}";
+                    if (value is IList valueIList)
+                        _valueToPresent = $"Count = {valueIList.Count}";
+                    else if (value is ICollection valueICollection)
+                        _valueToPresent = $"Count = {valueICollection.Count}";
+                    else
+                        _valueToPresent = "?";
                 }
 
                 return;
@@ -416,8 +601,13 @@ namespace GenericTreeView.SharedTypes
                     PropertyChildren.Add(new GenericObjectNode("[" + z + "]", val.GetType(), val, null, this, _aggregatorCreator));
                     z++;
                 }
-
-                _valueToPresent = $"Count = {((IList)value).Count}";
+                
+                if (value is IList valueIList)
+                    _valueToPresent = $"Count = {valueIList.Count}";
+                else if (value is ICollection valueICollection)
+                    _valueToPresent = $"Count = {valueICollection.Count}";
+                else
+                    _valueToPresent = "?";
 
                 return;
             }
@@ -491,13 +681,32 @@ namespace GenericTreeView.SharedTypes
 
         public bool IsPotentialToBeInstantiable()
         {
-            return _nameType == typeof(string) || (_nameType != null && _nameType.IsClass && !(_nameType.Namespace?.StartsWith("System") ?? false) && _nameType.GetConstructor(Type.EmptyTypes) != null
-                && _parent != null && _propertyName != null && _parent.Type.GetProperty(_propertyName.Name)?.SetMethod != null);
+            return 
+                _nameType == typeof(string)
+                || 
+                (_nameType != null && (_nameType.FullName?.StartsWith("System.Tuple") ?? false))
+                || 
+                (_nameType != null 
+                && 
+                _nameType.IsClass 
+                && 
+                ((!(_nameType.Namespace?.StartsWith("System") ?? false)) || (_nameType.Namespace?.StartsWith("System.Collections.Generic") ?? false))
+                && 
+                _nameType.GetConstructor(Type.EmptyTypes) != null
+                && 
+                _parent != null 
+                && 
+                _propertyName != null 
+                && 
+                _parent.Type.GetProperty(_propertyName.Name)?.SetMethod != null);
         }
 
         private TypeFinder typeFinder = new TypeFinder();
         public List<Type> GetInstantiableTypes()
         {
+            if (_nameType.FullName.StartsWith("System.Tuple"))
+                return new List<Type>() { _nameType };
+
             if (_nameType == typeof(string))
                 return new List<Type>() { typeof(string) };
 

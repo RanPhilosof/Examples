@@ -5,7 +5,7 @@
 
 <div style="display: flex; flex-wrap: wrap; flex-direction:column;">
     <div>
-        <GenericObjectViewer T="ComplexProto" OnApplyClicked="HandleUpdatedData" @ref="genericObjectViewer" />
+        <GenericObjectViewer T="Temp" InstanceCreator="@CreateInstance" OnApplyClicked="HandleUpdatedData" @ref="genericObjectViewer" />
     </div>
     <div>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@SetData">Click Here</MudButton>
@@ -15,23 +15,45 @@
 @inject IFetcherService fetcherService
 
 @code {
-    private GenericObjectViewer<ComplexProto> genericObjectViewer;
+    private GenericObjectViewer<Temp> genericObjectViewer;
 
     public void Update()
     {
         StateHasChanged();
     }
 
-    public void HandleUpdatedData(List<ComplexProto> objects)
+    public void HandleUpdatedData(List<Temp> objects)
     {
 
     }
 
+    public Temp CreateInstance()
+    {
+        return new Temp() { Ints = new List<int>() { 1, 2 }, Kvp = new Dictionary<int, string>() { { 1, "a" } }, Kvp2 = new Dictionary<int, string>() { { 2, "b" } }, ListTuple = new List<Tuple<int, string>>() { new Tuple<int, string>(10, "ten") }, R = new List<A>() { new A() { X = 10 } }, Tuple = new Tuple<int, string>(100, "hund"), Tuple2 = new Tuple<int, Tuple<int, string>>(10, new Tuple<int, string>(200, "twohund")) };
+    }
+
     public void SetData()
     {
-        var obj = (ComplexProto)fetcherService.GetRootObject();
-        var obj2 = (ComplexProto)fetcherService.GetRootObject();
+        var obj = (Temp)fetcherService.GetRootObject();
+        var obj2 = (Temp)fetcherService.GetRootObject();
 
-        genericObjectViewer.Init(new List<ComplexProto>() { obj, obj2 });
+        genericObjectViewer.Init(new List<Temp>() { obj, obj2 });
+    }
+
+    public class Temp
+    {
+        public List<int> Ints { get; set; }
+        public Dictionary<int, string> Kvp { get; set; }
+        public List<Tuple<int,string>> ListTuple { get; set; }
+        public Tuple<int, string> Tuple { get; set; }
+        public Dictionary<int, string> Kvp2 { get; set; } = new() { { 1, "Ran" }, { 2, "Ran2" } };
+        public Tuple<int, Tuple<int, string>> Tuple2 { get; set; }
+
+        public List<A> R { get; set; } = new List<A>() { new A() { X = 10 }, new A() { X = 20 } };
+    }
+
+    public class A
+    {
+        public int X { get; set; }
     }
 }
